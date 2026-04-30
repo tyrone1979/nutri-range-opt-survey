@@ -11,4 +11,3 @@ pymoo
 numba
 # 可选：用于更大规模食物数据库处理
 pandas>=2.0.0
-evox
