@@ -225,7 +225,7 @@ from sklearn.neighbors import NearestNeighbors
 
 
 class NutriSwapGA:
-    """NutriSwap-GA: 统一编码 + 指纹相似度智能变异"""
+    """NutriSwap-GA: 稳定工作版本"""
 
     def __init__(self, matrix, meal_tags, all_valid_idx, max_categories, debug=False):
         self.matrix = matrix
@@ -236,22 +236,15 @@ class NutriSwapGA:
         self.similar_foods = None
         self._fingerprint_built = False
 
-        if self.debug:
-            print(f"      [NutriSwap] Initialized: {len(all_valid_idx)} foods, max_categories={max_categories}")
-
     def _build_fingerprint_index_fast(self):
-        """快速构建指纹索引（使用采样）"""
         if self._fingerprint_built:
             return
-
         n_foods = len(self.all_valid_idx)
         if n_foods > 10000:
             sample_size = min(5000, n_foods)
             sample_indices = np.random.choice(n_foods, size=sample_size, replace=False)
             sampled_foods = self.all_valid_idx[sample_indices]
             sampled_matrix = self.matrix[sampled_foods]
-            if self.debug:
-                print(f"      [NutriSwap] Building index on {sample_size}/{n_foods} samples")
         else:
             sampled_foods = self.all_valid_idx
             sampled_matrix = self.matrix[sampled_foods]
@@ -296,7 +289,7 @@ class NutriSwapGA:
 
         self._fingerprint_built = True
         if self.debug:
-            print(f"      [NutriSwap] Index built, coverage: {len(self.similar_foods)}/{n_foods}")
+            print(f"      [NutriSwap] Index built")
 
     def _get_similar_foods(self, food_id):
         if not self._fingerprint_built:
@@ -304,10 +297,10 @@ class NutriSwapGA:
         return self.similar_foods.get(food_id, [])
 
     def _random_individual(self):
-        n_items = np.random.randint(3, min(30, len(self.all_valid_idx)) + 1)
+        n_items = np.random.randint(MIN_FOODS, min(MAX_FOODS, len(self.all_valid_idx)) + 1)
         return np.random.choice(self.all_valid_idx, size=n_items, replace=False)
 
-    def _select_best_replacement(self, original_food, current_individual, pos, target_array, col_idx):
+    def _select_best_replacement(self, original_food, current_individual, target_array, col_idx):
         similar_foods = self._get_similar_foods(original_food)[:10]
         if not similar_foods:
             return original_food
@@ -317,13 +310,12 @@ class NutriSwapGA:
         target_center = (target_array[:, 0] + target_array[:, 1]) / 2.0
 
         best_food = original_food
-        best_score = -np.inf
-        for similar_food, similarity in similar_foods:
+        best_dist = float('inf')
+        for similar_food, _ in similar_foods:
             new_total = current_total_without + self.matrix[similar_food][col_idx]
-            distance = np.sum((new_total - target_center) ** 2)
-            score = -distance + similarity * 10.0
-            if score > best_score:
-                best_score = score
+            dist = np.sum((new_total - target_center) ** 2)
+            if dist < best_dist:
+                best_dist = dist
                 best_food = similar_food
         return best_food
 
@@ -331,30 +323,10 @@ class NutriSwapGA:
         if len(individual) == 0:
             return individual
         mutated = individual.copy()
-        n_replace = min(np.random.randint(1, 3), len(mutated))
-        positions = np.random.choice(len(mutated), size=n_replace, replace=False)
-        for pos in positions:
-            new_food = self._select_best_replacement(mutated[pos], mutated, pos, target_array, col_idx)
-            mutated[pos] = new_food
+        pos = np.random.randint(0, len(mutated))
+        new_food = self._select_best_replacement(mutated[pos], mutated, target_array, col_idx)
+        mutated[pos] = new_food
         return np.unique(mutated)
-
-    def _mutate_random(self, individual):
-        if len(individual) == 0:
-            return individual
-        mutated = individual.copy()
-        action = np.random.randint(0, 3)
-        if action == 0 and len(mutated) < 30:
-            new_food = np.random.choice(self.all_valid_idx)
-            mutated = np.unique(np.concatenate([mutated, [new_food]]))
-        elif action == 1 and len(mutated) > 3:
-            pos = np.random.randint(0, len(mutated))
-            mutated = np.delete(mutated, pos)
-        else:
-            pos = np.random.randint(0, len(mutated))
-            new_food = np.random.choice(self.all_valid_idx)
-            mutated[pos] = new_food
-            mutated = np.unique(mutated)
-        return mutated
 
     def run(self, target_array, col_idx, pop_size=POP_SIZE,
             n_generations=N_GENERATIONS, max_evals=MAX_EVALS):
@@ -369,34 +341,41 @@ class NutriSwapGA:
         n_evals += pop_size
 
         if self.debug:
-            avg_div = diversities.mean()
-            print(f"      [NutriSwap] Init: feasible={feasibles.sum()}/{pop_size}, "
-                  f"best={scores.max():.4f}, diversity={avg_div:.3f}")
+            print(f"      [NutriSwap] Init: feasible={feasibles.sum()}/{pop_size}")
 
         ffg = None
-        feasible_found = False
-        elite_size = 0
+        best_feasible_individual = None
+        best_feasible_fitness = 0.0
 
         for gen in range(n_generations):
             if n_evals >= max_evals:
                 break
 
             n_feas = feasibles.sum()
-            if n_feas > 0 and not feasible_found:
+
+            # 记录最佳可行解
+            for i in range(len(population)):
+                if feasibles[i] and scores[i] > best_feasible_fitness:
+                    best_feasible_fitness = scores[i]
+                    best_feasible_individual = population[i].copy()
+
+            if n_feas > 0 and ffg is None:
                 ffg = gen + 1
-                feasible_found = True
                 if self.debug:
-                    print(f"      [NutriSwap] Gen {gen+1}: FIRST FEASIBLE! count={n_feas}")
+                    print(f"      [NutriSwap] Gen {gen + 1}: FIRST FEASIBLE! count={n_feas}")
 
             if n_feas >= 20:
                 if self.debug:
-                    print(f"      [NutriSwap] Gen {gen+1}: Early stop, {n_feas} feasible")
+                    print(f"      [NutriSwap] Gen {gen + 1}: Early stop")
                 break
 
+            # 精英保留
             feas_idx = np.where(feasibles)[0]
-            num_valid = min(len(feas_idx), pop_size)
-            elite_size = num_valid
-            new_pop = [population[i].copy() for i in feas_idx[:num_valid]]
+            elite_size = min(len(feas_idx), pop_size // 3)
+            new_pop = []
+            if elite_size > 0:
+                sorted_idx = feas_idx[np.argsort(scores[feas_idx])[::-1]]
+                new_pop = [population[i].copy() for i in sorted_idx[:elite_size]]
 
             remaining = pop_size - len(new_pop)
             if remaining > 0:
@@ -404,34 +383,41 @@ class NutriSwapGA:
                 if len(infeas_idx) > 0:
                     infeas_scores = np.maximum(scores[infeas_idx], 1e-10)
                     probs = infeas_scores / infeas_scores.sum()
-                    chosen = np.random.choice(infeas_idx, size=remaining, p=probs, replace=True)
+                    chosen = np.random.choice(infeas_idx, size=min(remaining, len(infeas_idx)), p=probs, replace=True)
                     new_pop.extend([population[i].copy() for i in chosen])
-                else:
-                    for i in range(remaining):
-                        new_pop.append(population[feas_idx[i % len(feas_idx)]].copy())
+                while len(new_pop) < pop_size:
+                    new_pop.append(self._random_individual())
 
             population = new_pop[:pop_size]
 
-            for i in range(elite_size, pop_size - 1, 2):
-                if np.random.random() < 0.2:
-                    combined = np.unique(np.concatenate([population[i], population[i+1]]))
-                    if len(combined) >= 3:
-                        n_target = np.random.randint(3, min(30, len(combined)) + 1)
+            # 交叉
+            for i in range(0, pop_size - 1, 2):
+                if np.random.random() < 0.25:
+                    combined = np.unique(np.concatenate([population[i], population[i + 1]]))
+                    if len(combined) >= MIN_FOODS:
+                        n_target = np.random.randint(MIN_FOODS, min(MAX_FOODS, len(combined)) + 1)
                         population[i] = np.random.choice(combined, size=n_target, replace=False)
 
+            # 变异
             for i in range(pop_size):
-                if np.random.random() < 0.9:
-                    if np.random.random() < 0.7:
-                        population[i] = self._mutate_smart(population[i], target_array, col_idx)
-                    else:
-                        population[i] = self._mutate_random(population[i])
+                if np.random.random() < 0.85:
+                    population[i] = self._mutate_smart(population[i], target_array, col_idx)
 
             scores, feasibles, diversities = fast_evaluate_pop(
                 population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
             n_evals += pop_size
 
+        # 最终评估：如果没有可行解，恢复历史最佳
         final_scores, final_feasibles, final_diversities = fast_evaluate_pop(
             population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
+
+        if final_feasibles.sum() == 0 and best_feasible_individual is not None:
+            if self.debug:
+                print(f"      [NutriSwap] Restoring best feasible individual")
+            population[0] = best_feasible_individual
+            final_scores, final_feasibles, final_diversities = fast_evaluate_pop(
+                population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
+
         avg_diversity = float(final_diversities.mean()) if len(final_diversities) > 0 else 0.0
 
         return [{
@@ -442,7 +428,6 @@ class NutriSwapGA:
             'n_evals': n_evals,
             'diversity': avg_diversity,
         }]
-
 
 # ============================================================
 # 4. BMOEA (Baseline)
@@ -750,8 +735,8 @@ class IntSampling(Sampling):
 
 
 def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all_valid_idx,
-                        max_categories, pop_size=5000, n_generations=50, debug=False):
-    """运行pymoo算法"""
+                        max_categories, pop_size=2000, n_generations=50, debug=False):
+    """运行pymoo算法 - 完整修复版"""
 
     default_result = {
         'ffg': n_generations + 1,
@@ -777,13 +762,13 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
             algorithm = NSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation)
         elif algo_name == 'NSGA3':
             algorithm = NSGA3(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling,
-                             crossover=crossover, mutation=mutation)
+                              crossover=crossover, mutation=mutation)
         elif algo_name == 'MOEAD':
             algorithm = MOEAD(ref_dirs=ref_dirs, n_neighbors=15, sampling=sampling,
-                             crossover=crossover, mutation=mutation)
+                              crossover=crossover, mutation=mutation)
         elif algo_name == 'RVEA':
             algorithm = RVEA(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling,
-                            crossover=crossover, mutation=mutation)
+                             crossover=crossover, mutation=mutation)
         else:
             return default_result
 
@@ -792,6 +777,10 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
         n_evals = 0
         first_feasible_gen = None
         best_fitness = 0.0
+
+        # 存储所有可行解（避免丢失）
+        all_feasible_individuals = []
+        all_feasible_fitness = []
 
         for gen in range(n_generations):
             algorithm.next()
@@ -803,40 +792,64 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
                     valid_mask = x >= 0
                     indices = all_valid_idx[x[valid_mask].astype(int)]
                     if len(indices) >= MIN_FOODS:
-                        f, _, fe, _ = evaluate(indices, matrix, target_array, col_idx, meal_tags, max_categories)
+                        f, _, fe, d = evaluate(indices, matrix, target_array, col_idx, meal_tags, max_categories)
                         f = min(1.0, max(0.0, f))
+
                         if f > best_fitness:
                             best_fitness = f
-                        if fe and first_feasible_gen is None:
-                            first_feasible_gen = gen + 1
-                            if debug:
-                                print(f"      [pymoo {algo_name}] Gen {gen+1}: FIRST FEASIBLE!")
 
-            if first_feasible_gen is not None and gen + 1 >= first_feasible_gen + 5:
-                if debug:
-                    print(f"      [pymoo {algo_name}] Early stop at gen {gen+1}")
-                break
+                        if fe:
+                            # 记录所有可行解
+                            all_feasible_individuals.append((indices.copy(), f, d))
+                            all_feasible_fitness.append(f)
 
-        n_feas = 0
-        avg_diversity = 0.0
-        diversity_sum = 0.0
+                            if first_feasible_gen is None:
+                                first_feasible_gen = gen + 1
+                                if debug:
+                                    print(f"      [pymoo {algo_name}] Gen {gen + 1}: FIRST FEASIBLE!")
 
-        if algorithm.pop is not None:
+                # 早停条件：可行解数量达到阈值
+                current_feas_count = len([1 for ind in algorithm.pop if hasattr(ind, 'feasible')])
+                # 更准确的方法：统计当前代所有可行解
+                feas_in_current_gen = 0
+                for ind in algorithm.pop:
+                    x = ind.X
+                    valid_mask = x >= 0
+                    indices = all_valid_idx[x[valid_mask].astype(int)]
+                    if len(indices) >= MIN_FOODS:
+                        _, _, fe, _ = evaluate(indices, matrix, target_array, col_idx, meal_tags, max_categories)
+                        if fe:
+                            feas_in_current_gen += 1
+
+                if feas_in_current_gen >= 20:
+                    if debug:
+                        print(f"      [pymoo {algo_name}] Gen {gen + 1}: Early stop, {feas_in_current_gen} feasible")
+                    break
+
+        # 【关键】最终结果：使用收集到的所有可行解
+        n_feas = len(all_feasible_individuals)
+
+        # 计算平均多样性（从可行解中）
+        if n_feas > 0:
+            avg_diversity = np.mean([d for _, _, d in all_feasible_individuals])
+        else:
+            avg_diversity = 0.0
+
+        # 如果没有找到可行解，从最后一代中统计
+        if n_feas == 0 and algorithm.pop is not None:
+            diversity_sum = 0.0
             for sol in algorithm.pop:
                 x = sol.X
                 valid_mask = x >= 0
                 indices = all_valid_idx[x[valid_mask].astype(int)]
                 if len(indices) >= MIN_FOODS:
                     f, _, fe, d = evaluate(indices, matrix, target_array, col_idx, meal_tags, max_categories)
-                    f = min(1.0, max(0.0, f))
                     if f > best_fitness:
                         best_fitness = f
                     if fe:
                         n_feas += 1
                     diversity_sum += d
-
-            if len(algorithm.pop) > 0:
-                avg_diversity = diversity_sum / len(algorithm.pop)
+            avg_diversity = diversity_sum / len(algorithm.pop) if len(algorithm.pop) > 0 else 0.0
 
         return {
             'ffg': first_feasible_gen if first_feasible_gen else n_generations + 1,
@@ -850,8 +863,6 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
     except Exception as e:
         print(f"      [pymoo {algo_name}] Error: {e}")
         return default_result
-
-
 # ============================================================
 # 7. 主程序
 # ============================================================
