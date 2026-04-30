@@ -591,10 +591,8 @@ class BMOEA:
 # ============================================================
 # 6. ACMO-Diet
 # ============================================================
-
-# 修复后的ACMODiet类
 class ACMODiet:
-    """ACMO-Diet: 统一编码版本 - 修复版"""
+    """ACMO-Diet: 统一编码版本 - 修复版 v2"""
 
     def __init__(self, matrix, meal_tags, all_valid_idx, debug=False):
         self.matrix = matrix
@@ -631,16 +629,18 @@ class ACMODiet:
             n_evals += pop_size
 
             n_feas = feasibles.sum()
+
+            # 记录首次可行
             if n_feas > 0 and ffg is None:
                 ffg = gen + 1
                 if self.debug:
                     print(f"      [ACMO] Gen {gen + 1}: FIRST FEASIBLE! count={n_feas}")
 
-                # 如果已经有足够可行解，可以提前停止
-                if n_feas >= 20:
-                    if self.debug:
-                        print(f"      [ACMO] Early stop at gen {gen + 1}")
-                    break
+            # 【修复】每代都检查早停条件
+            if n_feas >= 20:
+                if self.debug:
+                    print(f"      [ACMO] Gen {gen + 1}: Early stop, {n_feas} feasible")
+                break
 
             # 保留最佳个体
             best_idx = np.argmax(scores)
@@ -659,7 +659,6 @@ class ACMODiet:
 
                 # 交叉操作
                 if np.random.random() < 0.5 and len(child) > 0:
-                    # 修复：确保replace=True或正确处理数量
                     parent2 = population[parent2_idx]
                     if len(parent2) > 0:
                         # 决定替换数量
@@ -722,7 +721,6 @@ class ACMODiet:
             'best_fitness': float(final_scores.max()),
             'n_evals': n_evals,
         }]
-
 
 # ============================================================
 # 7. Random Search
