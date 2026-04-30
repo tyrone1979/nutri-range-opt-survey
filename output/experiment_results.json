@@ -1,0 +1,79 @@
+{
+  "NutriSwap": {
+    "ffg_mean": 5.4,
+    "ffg_std": 2.33238075793812,
+    "fhr_mean": 1.0,
+    "fhr_std": 0.0,
+    "fsc_mean": 20.8,
+    "fsc_std": 3.4292856398964493,
+    "best_fit_mean": 1.0,
+    "best_fit_std": 0.0,
+    "time": 25.518105030059814
+  },
+  "ACMO-Diet": {
+    "ffg_mean": 17.3,
+    "ffg_std": 8.521150157109075,
+    "fhr_mean": 1.0,
+    "fhr_std": 0.0,
+    "fsc_mean": 1.2,
+    "fsc_std": 0.4,
+    "best_fit_mean": 1.0,
+    "best_fit_std": 0.0,
+    "time": 10.743245363235474
+  },
+  "NSGA-II": {
+    "ffg_mean": 14.1,
+    "ffg_std": 6.363175307973213,
+    "fhr_mean": 1.0,
+    "fhr_std": 0.0,
+    "fsc_mean": 30.0,
+    "fsc_std": 0.0,
+    "best_fit_mean": 1.0,
+    "best_fit_std": 0.0,
+    "time": 89.64655709266663
+  },
+  "NSGA-III": {
+    "ffg_mean": 39.0,
+    "ffg_std": 19.24058211177614,
+    "fhr_mean": 0.1,
+    "fhr_std": 0.30000000000000004,
+    "fsc_mean": 0.3,
+    "fsc_std": 0.9000000000000001,
+    "best_fit_mean": 0.6821012988686561,
+    "best_fit_std": 0.2106260728518729,
+    "time": 37.389264822006226
+  },
+  "MOEA/D": {
+    "ffg_mean": 24.3,
+    "ffg_std": 22.262299971027254,
+    "fhr_mean": 0.1,
+    "fhr_std": 0.30000000000000004,
+    "fsc_mean": 0.3,
+    "fsc_std": 0.9000000000000001,
+    "best_fit_mean": 0.5983665972948075,
+    "best_fit_std": 0.17654786297712052,
+    "time": 34.37195539474487
+  },
+  "RVEA": {
+    "ffg_mean": 44.9,
+    "ffg_std": 12.251122397560152,
+    "fhr_mean": 0.0,
+    "fhr_std": 0.0,
+    "fsc_mean": 0.0,
+    "fsc_std": 0.0,
+    "best_fit_mean": 0.6081106901168823,
+    "best_fit_std": 0.18176359439069906,
+    "time": 49.26682996749878
+  },
+  "Random": {
+    "ffg_mean": 22.4,
+    "ffg_std": 18.48891559827131,
+    "fhr_mean": 0.8,
+    "fhr_std": 0.4,
+    "fsc_mean": 1.7,
+    "fsc_std": 1.2688577540449522,
+    "best_fit_mean": 0.9940136671066284,
+    "best_fit_std": 0.014250516891479492,
+    "time": 3.020308017730713
+  }
+}
