@@ -1,12 +1,10 @@
 import os
 import time
-from nutriswap_nhanes import *
+from BMOEA import *
+from baseline_algorithms import *
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("NutriSwap-GA v4: 超越 RVEA")
-    print("=" * 70)
-
     paths = {
         'nhanes': ['./data/nhanes.csv', '/mnt/agents/upload/nhanes.csv'],
         'food_type': ['./data/food_type.csv', '/mnt/agents/upload/food_type.csv'],
@@ -28,7 +26,7 @@ if __name__ == '__main__':
     n_targets = len(all_targets)
     print(f"\nTotal targets: {n_targets}")
 
-    NUM_TARGETS_TO_TEST = min(5, n_targets)
+    NUM_TARGETS_TO_TEST = n_targets
     print(f"\nTesting first {NUM_TARGETS_TO_TEST} targets...")
 
     all_targets_results = []
@@ -52,14 +50,6 @@ if __name__ == '__main__':
         max_categories = compute_max_categories(all_valid)
         print(f"  Max food categories: {max_categories}")
 
-        b_count = np.sum(meal_tags[all_valid] == 0)
-        l_count = np.sum(meal_tags[all_valid] == 1)
-        d_count = np.sum(meal_tags[all_valid] == 2)
-        print(f"  b/l/d: {b_count}/{l_count}/{d_count}")
-
-        if b_count == 0 or l_count == 0 or d_count == 0:
-            print("  Missing meal types, skipping")
-            continue
 
         def _rand_ind():
             ind = random_individual(all_valid, meal_tags)
@@ -67,13 +57,13 @@ if __name__ == '__main__':
                 ind = np.random.choice(all_valid, MIN_FOODS, replace=False)
             return ind
 
-        # 安全调用
+        # 安全调用 - 注意 evaluate_single 现在返回5个值
         fc = 0
         for _ in range(100):
             ind = _rand_ind()
             if ind is not None and len(ind) > 0:
                 try:
-                    _, _, feasible, _ = evaluate_single(ind, matrix, ta, ci, meal_tags, max_categories)
+                    _, _, feasible, _, _ = evaluate_single(ind, matrix, ta, ci, meal_tags, max_categories)
                     if feasible:
                         fc += 1
                 except Exception:
@@ -81,17 +71,18 @@ if __name__ == '__main__':
         print(f"Random feasibility: {fc}%")
 
         print(f"\nRunning algorithms (pop={POP_SIZE}, gen={N_GENERATIONS})")
-        print(f"{'Algorithm':<15} {'FFG':>6} {'FHR':>6} {'FSC':>6} {'BestFit':>8} {'Diversity':>9} {'N_Foods':>7} {'Evals':>8} {'Time(s)':>8}")
-        print(f"{'-' * 84}")
+        print(f"{'Algorithm':<15} {'FFG':>6} {'FHR':>6} {'FSC':>6} {'BestFit':>8} {'Diversity':>9} {'Contrib':>8} {'N_Foods':>7} {'Evals':>8} {'Time(s)':>8}")
+        print(f"{'-' * 92}")
 
         algorithms = {
-            'NutriSwap': lambda: NutriSwapGA(matrix, meal_tags, all_valid, max_categories, debug=True).run(ta, ci),
             'BMOEA': lambda: BMOEA(matrix, meal_tags, all_valid, max_categories, debug=False).run(ta, ci),
             'ACMO-Diet': lambda: ACMODiet(matrix, meal_tags, all_valid, max_categories, debug=False).run(ta, ci),
+            'MA': lambda: MemeticAlgorithm(matrix, meal_tags, all_valid, max_categories, debug=False).run(ta, ci),
+
         }
 
         if PYMOO_AVAILABLE:
-            pymoo_algos = ['RVEA']
+            pymoo_algos = ['RVEA','SPEA2','NSGA2','NSGA3','AGEMOEA','SMSEMOA','CTAEA']
             for name in pymoo_algos:
                 algorithms[name] = lambda n=name: [run_pymoo_algorithm(
                     n, matrix, ta, ci, meal_tags, all_valid, max_categories,
@@ -109,8 +100,9 @@ if __name__ == '__main__':
                 elapsed = time.time() - t0
                 target_results[name] = r
                 diversity_display = f"{r.get('diversity', 0):8.3f}"
+                contrib_display = f"{r.get('contrib', 0):7.3f}"
                 n_foods_display = f"{r.get('avg_n_foods', 0):6.1f}"
-                print(f"{name:<15} {r['ffg']:6.0f} {r['fhr'] * 100:5.0f}% {r['fsc']:5.0f} {r['best_fitness']:8.3f} {diversity_display:>9} {n_foods_display:>7} {r['n_evals']:7.0f} {elapsed:7.1f}")
+                print(f"{name:<15} {r['ffg']:6.0f} {r['fhr'] * 100:5.0f}% {r['fsc']:5.0f} {r['best_fitness']:8.3f} {diversity_display:>9} {contrib_display:>8} {n_foods_display:>7} {r['n_evals']:7.0f} {elapsed:7.1f}")
             except Exception as e:
                 print(f"{name:<15} ERROR: {e}")
                 import traceback
@@ -118,7 +110,7 @@ if __name__ == '__main__':
 
         print(f"\nSummary for Target {target_idx + 1}:")
         for name, r in target_results.items():
-            print(f"  {name:<12}: FFG={r['ffg']:5.0f} FHR={r['fhr'] * 100:5.0f}% BestFit={r['best_fitness']:.3f}")
+            print(f"  {name:<12}: FFG={r['ffg']:5.0f} FHR={r['fhr'] * 100:5.0f}% BestFit={r['best_fitness']:.3f} Contrib={r.get('contrib', 0):.3f}")
 
         all_targets_results.append({
             'target_idx': target_idx + 1,
@@ -137,22 +129,24 @@ if __name__ == '__main__':
         for target_result in all_targets_results:
             for name, r in target_result['results'].items():
                 if name not in algo_avg:
-                    algo_avg[name] = {'ffg': [], 'fsc': [], 'best_fitness': [], 'diversity': [], 'avg_n_foods': []}
+                    algo_avg[name] = {'ffg': [], 'fsc': [], 'best_fitness': [], 'diversity': [], 'contrib': [], 'avg_n_foods': []}
                 algo_avg[name]['ffg'].append(r['ffg'])
                 algo_avg[name]['fsc'].append(r['fsc'])
                 algo_avg[name]['best_fitness'].append(r['best_fitness'])
                 algo_avg[name]['diversity'].append(r.get('diversity', 0))
+                algo_avg[name]['contrib'].append(r.get('contrib', 0))
                 algo_avg[name]['avg_n_foods'].append(r.get('avg_n_foods', 0))
 
-        print(f"\n{'Algorithm':<15} {'Avg FFG':>10} {'Avg FSC':>10} {'Avg BestFit':>12} {'Avg Diversity':>14} {'Avg N_Foods':>12}")
-        print(f"{'-' * 73}")
+        print(f"\n{'Algorithm':<15} {'Avg FFG':>10} {'Avg FSC':>10} {'Avg BestFit':>12} {'Avg Diversity':>14} {'Avg Contrib':>12} {'Avg N_Foods':>12}")
+        print(f"{'-' * 85}")
         for name in sorted(algo_avg.keys()):
             avg_ffg = np.mean(algo_avg[name]['ffg'])
             avg_fsc = np.mean(algo_avg[name]['fsc'])
             avg_fit = np.mean(algo_avg[name]['best_fitness'])
             avg_div = np.mean(algo_avg[name]['diversity'])
+            avg_contrib = np.mean(algo_avg[name]['contrib'])
             avg_nf = np.mean(algo_avg[name]['avg_n_foods'])
-            print(f"{name:<15} {avg_ffg:10.1f} {avg_fsc:10.1f} {avg_fit:12.3f} {avg_div:14.3f} {avg_nf:12.1f}")
+            print(f"{name:<15} {avg_ffg:10.1f} {avg_fsc:10.1f} {avg_fit:12.3f} {avg_div:14.3f} {avg_contrib:12.3f} {avg_nf:12.1f}")
 
         print(f"{'=' * 70}")
 

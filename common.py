@@ -107,12 +107,13 @@ def evaluate_batch(population, matrix, target_array, col_idx, meal_tags, max_cat
     scores = np.zeros(pop_size, dtype=np.float32)
     feasibles = np.zeros(pop_size, dtype=bool)
     diversities = np.zeros(pop_size, dtype=np.float32)
-    n_foods_arr = np.zeros(pop_size, dtype=np.int32)  # 新增
+    n_foods_arr = np.zeros(pop_size, dtype=np.int32)
+    contrib_diversities = np.zeros(pop_size, dtype=np.float32)  # 新增
 
     for i in range(pop_size):
         ind = population[i]
         n_foods = len(ind)
-        n_foods_arr[i] = n_foods  # 记录
+        n_foods_arr[i] = n_foods
         if n_foods < MIN_FOODS or n_foods > MAX_FOODS:
             continue
 
@@ -127,21 +128,27 @@ def evaluate_batch(population, matrix, target_array, col_idx, meal_tags, max_cat
         meal_coverage = int(np.any(meals == 0)) + int(np.any(meals == 1)) + int(np.any(meals == 2))
         meal_penalty = float((3 - meal_coverage) * MEAL_COVERAGE_WEIGHT)
 
+        # 原类别 diversity
         categories = set()
         for fid in ind:
             categories.add(get_food_category(fid))
         diversity_score = len(categories) / max_categories if max_categories > 0 else 0.0
         diversity_penalty = float((1 - diversity_score) * DIVERSITY_WEIGHT)
 
-        total_penalty = nutrient_penalty + meal_penalty + diversity_penalty
+        # 新增：贡献度 diversity
+        contrib_div = compute_contribution_diversity(ind, matrix, col_idx)
+        contrib_penalty = (1.0 - contrib_div) * DIVERSITY_WEIGHT * 0.5  # 权重可调
+
+        total_penalty = nutrient_penalty + meal_penalty + diversity_penalty + contrib_penalty
         fitness = 1.0 / (1.0 + max(0.0, total_penalty))
         feasible = nutrient_feasible and (meal_coverage == 3)
 
         scores[i] = fitness
         feasibles[i] = feasible
         diversities[i] = diversity_score
+        contrib_diversities[i] = contrib_div  # 记录
 
-    return scores, feasibles, diversities, n_foods_arr  # 返回4个
+    return scores, feasibles, diversities, n_foods_arr, contrib_diversities
 
 
 def random_individual(all_valid_idx, meal_tags):
@@ -164,3 +171,108 @@ def random_individual(all_valid_idx, meal_tags):
 
     return np.array(individual, dtype=np.int32)
 
+import numpy as np
+
+
+def compute_nutrient_coverage(individual, matrix, col_idx, threshold=0.1):
+    """
+    向量化版本：营养素覆盖度
+    每个营养素至少有一个食物贡献超过阈值
+    """
+    nutrients = matrix[individual][:, col_idx]  # (n_foods, n_nutrients)
+    total = nutrients.sum(axis=0)  # (n_nutrients,)
+
+    # 避免除零
+    total_safe = np.where(total > 0, total, 1.0)
+
+    # 每个营养素的最大贡献占比
+    max_contrib_ratio = nutrients.max(axis=0) / total_safe
+
+    # 统计超过阈值的营养素数量
+    coverage = np.sum((max_contrib_ratio > threshold) & (total > 0))
+
+    return coverage / len(col_idx)
+
+
+def compute_contribution_entropy(individual, matrix, col_idx):
+    """
+    向量化版本：贡献熵
+    食物对总营养的贡献分布越均匀，熵越高
+    """
+    nutrients = matrix[individual][:, col_idx]  # (n_foods, n_nutrients)
+    food_totals = nutrients.sum(axis=1)  # (n_foods,)
+    total_all = food_totals.sum()
+
+    if total_all == 0:
+        return 0.0
+
+    probs = food_totals / total_all
+    # 向量化计算香农熵
+    entropy = -np.sum(probs * np.log(probs + 1e-10))
+    max_entropy = np.log(len(individual))
+
+    return entropy / max_entropy if max_entropy > 0 else 0.0
+
+
+def compute_complementarity(individual, matrix, col_idx):
+    """
+    向量化版本：互补度
+    食物两两之间的营养素相关性越低越好
+
+    优化：使用矩阵乘法一次性计算所有两两相关，避免O(n^2) Python循环
+    原版本调用np.corrcoef n*(n-1)/2次，新版本只计算1次相关矩阵
+    """
+    nutrients = matrix[individual][:, col_idx]  # (n_foods, n_nutrients)
+    n = len(individual)
+
+    if n < 2:
+        return 0.0
+
+    # 标准化每行（每个食物）
+    nutrients_centered = nutrients - nutrients.mean(axis=1, keepdims=True)
+    norms = np.linalg.norm(nutrients_centered, axis=1, keepdims=True)
+    norms_safe = np.where(norms > 0, norms, 1.0)
+    nutrients_normed = nutrients_centered / norms_safe
+
+    # 计算相关矩阵: (n,n) = (n,d) @ (d,n)
+    corr_matrix = nutrients_normed @ nutrients_normed.T
+
+    # 取上三角（排除对角线），得到所有唯一配对
+    triu_indices = np.triu_indices(n, k=1)
+    correlations = np.abs(corr_matrix[triu_indices])
+
+    avg_corr = correlations.mean()
+    return 1.0 - avg_corr
+
+
+def compute_dominant_nutrients(individual, matrix, col_idx, dominance_threshold=0.3):
+    """
+    向量化版本：主导营养素数
+    每个食物至少有一个营养素贡献占比 > threshold
+    """
+    nutrients = matrix[individual][:, col_idx]  # (n_foods, n_nutrients)
+    total = nutrients.sum(axis=0)  # (n_nutrients,)
+
+    # 避免除零
+    total_safe = np.where(total > 0, total, 1.0)
+
+    # 每个食物对每个营养素的贡献占比
+    ratios = nutrients / total_safe  # (n_foods, n_nutrients)
+
+    # 每个食物是否有主导营养素
+    has_dominant = np.any(ratios > dominance_threshold, axis=1)
+
+    return has_dominant.sum() / len(individual)
+
+
+def compute_contribution_diversity(individual, matrix, col_idx):
+    """
+    向量化版本：综合贡献度
+    结合覆盖度、互补度、主导营养素
+    """
+    coverage = compute_nutrient_coverage(individual, matrix, col_idx)
+    entropy = compute_contribution_entropy(individual, matrix, col_idx)
+    complementarity = compute_complementarity(individual, matrix, col_idx)
+    dominant = compute_dominant_nutrients(individual, matrix, col_idx)
+
+    return 0.3 * coverage + 0.3 * entropy + 0.2 * complementarity + 0.2 * dominant

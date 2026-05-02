@@ -1,13 +1,10 @@
-
-import warnings
-import numpy as np
 from common import *
 warnings.filterwarnings('ignore')
 np.random.seed(42)
 
-# ============================================================
-# 4. BMOEA (Baseline)
-# ============================================================
+
+warnings.filterwarnings('ignore')
+np.random.seed(42)
 
 class BMOEA:
     def __init__(self, matrix, meal_tags, all_valid_idx, max_categories, debug=False):
@@ -37,7 +34,7 @@ class BMOEA:
                 if n_evals >= max_evals:
                     break
 
-                scores, feasibles, _, n_foods_arr = evaluate_batch(
+                scores, feasibles, _, n_foods_arr,contrib_diversities = evaluate_batch(
                     population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
                 n_evals += pop_size
 
@@ -101,15 +98,17 @@ class BMOEA:
                             indices[pos] = new_idx
                             population[i] = np.unique(indices)
 
-            final_scores, final_feasibles, final_diversities, final_n_foods = evaluate_batch(
+            final_scores, final_feasibles, final_diversities, final_n_foods,contrib_diversities = evaluate_batch(
                 population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
 
             if final_feasibles.sum() > 0:
                 avg_diversity = float(final_diversities[final_feasibles].mean())
                 avg_n_foods = float(final_n_foods[final_feasibles].mean())
+                avg_contrib = float(contrib_diversities[final_feasibles].mean())
             else:
                 avg_diversity = 0.0
                 avg_n_foods = 0.0
+                avg_contrib = 0.0
 
             return [{
                 'ffg': ffg if ffg else n_generations + 1,
@@ -119,8 +118,302 @@ class BMOEA:
                 'n_evals': n_evals,
                 'diversity': avg_diversity,
                 'avg_n_foods': avg_n_foods,
+                'contrib': avg_contrib
             }]
 
+class MemeticAlgorithm:
+    def __init__(self, matrix, meal_tags, all_valid_idx, max_categories, debug=False):
+        self.matrix = matrix
+        self.meal_tags = meal_tags
+        self.all_valid_idx = all_valid_idx
+        self.max_categories = max_categories
+        self.debug = debug
+
+    def run(self, target_array, col_idx, pop_size=POP_SIZE,
+            n_generations=N_GENERATIONS, max_evals=MAX_EVALS):
+
+        n_valid = len(self.all_valid_idx)
+
+        # 初始化
+        population = []
+        for _ in range(pop_size):
+            n_items = np.random.randint(MIN_FOODS, min(MAX_FOODS, n_valid) + 1)
+            selected = np.random.choice(self.all_valid_idx, size=n_items, replace=False)
+            population.append(selected)
+
+        ffg = None
+        feasible_found = False
+        n_evals = 0
+        best_feasible = None
+        best_fitness = 0.0
+
+        # 预计算目标中心和范围
+        target_center = (target_array[:, 0] + target_array[:, 1]) / 2.0
+
+        # 用于局部搜索的预计算
+        all_valid_nutrients = self.matrix[self.all_valid_idx][:, col_idx]
+
+        for gen in range(n_generations):
+            if n_evals >= max_evals:
+                break
+
+            # ============ 评估 ============
+            scores, feasibles, diversities, n_foods_arr, contrib_diversities = evaluate_batch(
+                population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
+            n_evals += pop_size
+
+            n_feas = feasibles.sum()
+
+            if n_feas > 0:
+                feas_scores = scores[feasibles]
+                best_local_idx = np.argmax(feas_scores)
+                best_local_score = feas_scores[best_local_idx]
+                if best_local_score > best_fitness:
+                    best_fitness = best_local_score
+                    feas_indices = np.where(feasibles)[0]
+                    best_feasible = population[feas_indices[best_local_idx]].copy()
+
+                if not feasible_found:
+                    ffg = gen + 1
+                    feasible_found = True
+                    if self.debug:
+                        print(f"      [MA] Gen {gen + 1}: FIRST FEASIBLE! count={n_feas}")
+
+            if n_feas >= 20:
+                if self.debug:
+                    print(f"      [MA] Gen {gen + 1}: Early stop, {n_feas} feasible")
+                break
+
+            # ============ 局部搜索：对精英个体进行精细优化 ============
+            if n_feas > 0 and gen % 3 == 0:  # 每3代做一次局部搜索
+                n_ls = min(5, n_feas)  # 对前5个可行解做局部搜索
+
+                for idx in np.where(feasibles)[0][:n_ls]:
+                    improved = self._local_search(
+                        population[idx], target_array, col_idx,
+                        target_center, all_valid_nutrients, max_iter=10
+                    )
+
+                    # 评估改进后的个体
+                    fit, _, feas, _, _ = evaluate_single(
+                        improved, self.matrix, target_array, col_idx,
+                        self.meal_tags, self.max_categories
+                    )
+                    n_evals += 1
+
+                    if feas and fit > best_fitness:
+                        best_fitness = fit
+                        best_feasible = improved.copy()
+                        population[idx] = improved
+                        scores[idx] = fit
+                        feasibles[idx] = True
+
+            # ============ 选择 ============
+            feas_idx = np.where(feasibles)[0]
+            num_valid = min(len(feas_idx), pop_size)
+            new_pop = [population[i].copy() for i in feas_idx[:num_valid]]
+            elite_size = num_valid
+
+            remaining = pop_size - len(new_pop)
+            if remaining > 0:
+                infeas_idx = np.where(~feasibles)[0]
+                if len(infeas_idx) > 0:
+                    infeas_scores = np.maximum(scores[infeas_idx], 0)
+                    s = infeas_scores.sum()
+                    if s > 1e-10:
+                        probs = infeas_scores / s
+                        chosen = np.random.choice(infeas_idx, size=remaining, p=probs, replace=True)
+                    else:
+                        chosen = np.random.choice(infeas_idx, size=remaining, replace=True)
+                    for idx in chosen:
+                        new_pop.append(population[idx].copy())
+                else:
+                    for i in range(remaining):
+                        idx = feas_idx[i % len(feas_idx)]
+                        new_pop.append(population[idx].copy())
+
+            population = new_pop[:pop_size]
+
+            # ============ 交叉 ============
+            for i in range(elite_size, pop_size - 1, 2):
+                if np.random.random() < 0.3:
+                    combined = np.unique(np.concatenate([population[i], population[i + 1]]))
+                    n_target = np.random.randint(MIN_FOODS, min(MAX_FOODS, len(combined)) + 1)
+                    population[i] = np.random.choice(combined, size=n_target, replace=False)
+
+            # ============ 变异 ============
+            for i in range(pop_size):
+                if np.random.random() < 0.7:
+                    indices = population[i]
+                    if len(indices) == 0:
+                        continue
+
+                    action = np.random.randint(0, 3)
+                    if action == 0 and len(indices) < MAX_FOODS:
+                        # 添加：智能选择能改善营养的食物
+                        if np.random.random() < 0.3 and len(indices) >= MIN_FOODS:
+                            current_total = self.matrix[indices][:, col_idx].sum(axis=0)
+                            gap = target_center - current_total
+
+                            # 选10个候选，找最能弥补缺口的
+                            candidates = np.random.choice(self.all_valid_idx, size=min(10, n_valid), replace=False)
+                            best_score = -float('inf')
+                            best_cand = None
+                            for cand in candidates:
+                                new_total = current_total + self.matrix[cand][col_idx]
+                                score = -np.sum((new_total - target_center) ** 2)
+                                if score > best_score:
+                                    best_score = score
+                                    best_cand = cand
+                            if best_cand is not None:
+                                indices = np.concatenate([indices, [best_cand]])
+                        else:
+                            new_idx = np.random.choice(self.all_valid_idx)
+                            indices = np.concatenate([indices, [new_idx]])
+                        population[i] = np.unique(indices)
+
+                    elif action == 1 and len(indices) > MIN_FOODS:
+                        # 删除：移除对目标贡献最差的食物
+                        current_total = self.matrix[indices][:, col_idx].sum(axis=0)
+                        best_score = float('inf')
+                        worst_pos = 0
+                        for j, food in enumerate(indices):
+                            without = current_total - self.matrix[food][col_idx]
+                            score = np.sum((without - target_center) ** 2)
+                            if score < best_score:
+                                best_score = score
+                                worst_pos = j
+                        population[i] = np.delete(indices, worst_pos)
+
+                    else:
+                        # 替换：找更好的食物
+                        pos = np.random.randint(0, len(indices))
+                        old_food = indices[pos]
+
+                        if np.random.random() < 0.3 and len(indices) >= MIN_FOODS:
+                            # 智能替换
+                            current_total = self.matrix[indices][:, col_idx].sum(axis=0)
+                            without = current_total - self.matrix[old_food][col_idx]
+
+                            candidates = np.random.choice(self.all_valid_idx, size=min(10, n_valid), replace=False)
+                            best_score = float('inf')
+                            best_cand = old_food
+                            for cand in candidates:
+                                new_total = without + self.matrix[cand][col_idx]
+                                score = np.sum((new_total - target_center) ** 2)
+                                if score < best_score:
+                                    best_score = score
+                                    best_cand = cand
+                            indices[pos] = best_cand
+                        else:
+                            indices[pos] = np.random.choice(self.all_valid_idx)
+                        population[i] = np.unique(indices)
+
+        # ============ 最终局部搜索：对所有可行解做精细优化 ============
+        final_scores, final_feasibles, final_diversities, final_n_foods, contrib_diversities = evaluate_batch(
+            population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
+
+        n_evals += pop_size
+
+        if final_feasibles.sum() == 0 and best_feasible is not None:
+            if self.debug:
+                print(f"      [MA] Restoring best feasible")
+            population[0] = best_feasible
+            final_scores, final_feasibles, final_diversities, final_n_foods, contrib_diversities = evaluate_batch(
+                population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
+        elif final_feasibles.sum() > 0:
+            # 对前3个最优可行解做最终局部搜索
+            feas_indices = np.where(final_feasibles)[0]
+            top_indices = feas_indices[np.argsort(final_scores[feas_indices])[-3:]]
+
+            for idx in top_indices:
+                improved = self._local_search(
+                    population[idx], target_array, col_idx,
+                    target_center, all_valid_nutrients, max_iter=20
+                )
+                fit, _, feas, _, _ = evaluate_single(
+                    improved, self.matrix, target_array, col_idx,
+                    self.meal_tags, self.max_categories
+                )
+                n_evals += 1
+                if feas and fit > final_scores[idx]:
+                    population[idx] = improved
+                    final_scores[idx] = fit
+
+        if final_feasibles.sum() > 0:
+            avg_diversity = float(final_diversities[final_feasibles].mean())
+            avg_n_foods = float(final_n_foods[final_feasibles].mean())
+            avg_contrib = float(contrib_diversities[final_feasibles].mean())
+        else:
+            avg_diversity = 0.0
+            avg_n_foods = 0.0
+            avg_contrib = 0.0
+
+        return [{
+            'ffg': ffg if ffg else n_generations + 1,
+            'fhr': 1.0 if np.any(final_feasibles) else 0.0,
+            'fsc': int(final_feasibles.sum()),
+            'best_fitness': float(final_scores.max()),
+            'n_evals': n_evals,
+            'diversity': avg_diversity,
+            'avg_n_foods': avg_n_foods,
+            'contrib': avg_contrib
+        }]
+
+    def _local_search(self, individual, target_array, col_idx, target_center,
+                      all_valid_nutrients, max_iter=10):
+        """
+        Memetic Algorithm 的核心：局部搜索
+        使用迭代改进：逐个位置尝试替换，找到更优解
+        """
+        individual = np.array(individual, dtype=np.int32)
+        if len(individual) < MIN_FOODS:
+            return individual
+
+        best_ind = individual.copy()
+        best_total = self.matrix[best_ind][:, col_idx].sum(axis=0)
+        best_dist = np.sum((best_total - target_center) ** 2)
+
+        # 获取所有候选食物（随机采样以提高效率）
+        n_candidates = min(50, len(self.all_valid_idx))
+        candidates = np.random.choice(self.all_valid_idx, size=n_candidates, replace=False)
+        candidate_nutrients = self.matrix[candidates][:, col_idx]
+
+        improved = True
+        iteration = 0
+
+        while improved and iteration < max_iter:
+            improved = False
+            iteration += 1
+
+            # 随机打乱搜索顺序
+            positions = np.random.permutation(len(best_ind))
+
+            for pos in positions:
+                old_food = best_ind[pos]
+                old_nutrients = self.matrix[old_food][col_idx]
+
+                # 计算移除这个食物后的营养总和
+                without = best_total - old_nutrients
+
+                # 尝试所有候选，找最好的替换
+                new_totals = without + candidate_nutrients
+                distances = np.sum((new_totals - target_center) ** 2, axis=1)
+                best_cand_idx = np.argmin(distances)
+
+                if distances[best_cand_idx] < best_dist:
+                    # 找到更好的替换
+                    best_ind[pos] = candidates[best_cand_idx]
+                    best_total = without + candidate_nutrients[best_cand_idx]
+                    best_dist = distances[best_cand_idx]
+                    improved = True
+
+                    # 如果已经是可行解且足够好，提前退出
+                    lo, hi = target_array[:, 0], target_array[:, 1]
+                    if np.all(best_total >= lo) and np.all(best_total <= hi):
+                        return best_ind
+
+        return best_ind
 
 # ============================================================
 # 5. ACMO-Diet (Baseline)
@@ -155,7 +448,7 @@ class ACMODiet:
                 if n_evals >= max_evals:
                     break
 
-                scores, feasibles, _, n_foods_arr = evaluate_batch(
+                scores, feasibles, _, n_foods_arr,contrib_diversities = evaluate_batch(
                     population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
                 n_evals += pop_size
 
@@ -218,15 +511,17 @@ class ACMODiet:
 
                 population = new_pop
 
-            final_scores, final_feasibles, final_diversities, final_n_foods = evaluate_batch(
+            final_scores, final_feasibles, final_diversities, final_n_foods,contrib_diversities = evaluate_batch(
                 population, self.matrix, target_array, col_idx, self.meal_tags, self.max_categories)
 
             if final_feasibles.sum() > 0:
                 avg_diversity = float(final_diversities[final_feasibles].mean())
                 avg_n_foods = float(final_n_foods[final_feasibles].mean())
+                avg_contrib = float(contrib_diversities[final_feasibles].mean())
             else:
                 avg_diversity = 0.0
                 avg_n_foods = 0.0
+                avg_contrib = 0.0
 
             return [{
                 'ffg': ffg if ffg else n_generations + 1,
@@ -236,6 +531,7 @@ class ACMODiet:
                 'n_evals': n_evals,
                 'diversity': avg_diversity,
                 'avg_n_foods': avg_n_foods,
+                'contrib': avg_contrib
             }]
 
 
@@ -243,11 +539,16 @@ class ACMODiet:
 # 6. pymoo 多目标算法适配器
 # ============================================================
 
+# 在 try 块的导入部分，添加 CTAEA
 try:
     from pymoo.algorithms.moo.nsga2 import NSGA2
     from pymoo.algorithms.moo.nsga3 import NSGA3
     from pymoo.algorithms.moo.moead import MOEAD
+    from pymoo.algorithms.moo.age import AGEMOEA
+    from pymoo.algorithms.moo.sms import SMSEMOA
     from pymoo.algorithms.moo.rvea import RVEA
+    from pymoo.algorithms.moo.spea2 import SPEA2
+    from pymoo.algorithms.moo.ctaea import CTAEA    # 新增
     from pymoo.core.problem import Problem
     from pymoo.operators.crossover.sbx import SBX
     from pymoo.operators.mutation.pm import PM
@@ -328,7 +629,7 @@ class IntSampling(Sampling):
 def evaluate_single(individual, matrix, target_array, col_idx, meal_tags, max_categories):
     n_foods = len(individual)
     if n_foods < MIN_FOODS or n_foods > MAX_FOODS:
-        return 0.0, None, False, 0.0
+        return 0.0, None, False, 0.0, 0.0  # 增加第5个返回值 0.0
 
     total = matrix[individual][:, col_idx].sum(axis=0)
     lo, hi = target_array[:, 0], target_array[:, 1]
@@ -347,13 +648,17 @@ def evaluate_single(individual, matrix, target_array, col_idx, meal_tags, max_ca
     diversity_score = len(categories) / max_categories if max_categories > 0 else 0.0
     diversity_penalty = float((1 - diversity_score) * DIVERSITY_WEIGHT)
 
+    # 新增：计算贡献度多样性
+    contrib_diversity = compute_contribution_diversity(individual, matrix, col_idx)
+
     total_penalty = nutrient_penalty + meal_penalty + diversity_penalty
     fitness = 1.0 / (1.0 + max(0.0, total_penalty))
     feasible = nutrient_feasible and (meal_coverage == 3)
 
-    return fitness, total, feasible, diversity_score
+    # 返回5个值，与 evaluate_batch 对齐
+    return fitness, total, feasible, diversity_score, contrib_diversity
 
-# run_pymoo_algorithm
+
 def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all_valid_idx,
                         max_categories, pop_size=2000, n_generations=50, debug=False):
     default_result = {
@@ -383,11 +688,34 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
             algorithm = NSGA3(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling,
                               crossover=crossover, mutation=mutation)
         elif algo_name == 'MOEAD':
-            algorithm = MOEAD(ref_dirs=ref_dirs, n_neighbors=15, sampling=sampling,
-                              crossover=crossover, mutation=mutation)
+            algorithm = MOEAD(
+                ref_dirs=ref_dirs,
+                n_neighbors=20,  # 增加邻居数
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
+                prob_neighbor_mating=0.7  # 降低邻居交配概率
+            )
         elif algo_name == 'RVEA':
             algorithm = RVEA(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling,
                              crossover=crossover, mutation=mutation)
+        elif algo_name == 'SPEA2':
+            # SPEA2 使用存档大小参数
+            algorithm = SPEA2(pop_size=pop_size, sampling=sampling,
+                             crossover=crossover, mutation=mutation)
+        elif algo_name == 'AGEMOEA':
+            # AGEMOEA: 自适应几何多目标进化算法
+            algorithm = AGEMOEA(pop_size=pop_size, sampling=sampling,
+                                crossover=crossover, mutation=mutation)
+        elif algo_name == 'SMSEMOA':
+            # SMSEMOA: 基于 S 度量选择的多目标进化算法
+            algorithm = SMSEMOA(pop_size=pop_size, sampling=sampling,
+                                crossover=crossover, mutation=mutation)
+        elif algo_name == 'CTAEA':
+            # CTAEA: 双档案约束多目标进化算法
+            # 使用两个档案：收敛性档案（CA）和多样性档案（DA）
+            algorithm = CTAEA(ref_dirs=ref_dirs, sampling=sampling,
+                              crossover=crossover, mutation=mutation)
         else:
             return default_result
 
@@ -409,14 +737,14 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
                     valid_mask = x >= 0
                     indices = all_valid_idx[x[valid_mask].astype(int)]
                     if len(indices) >= MIN_FOODS:
-                        f, _, fe, d = evaluate_single(indices, matrix, target_array, col_idx, meal_tags, max_categories)
+                        f, _, fe, d, c = evaluate_single(indices, matrix, target_array, col_idx, meal_tags, max_categories)
                         f = min(1.0, max(0.0, f))
 
                         if fe and f > best_fitness:
                             best_fitness = f
 
                         if fe:
-                            all_feasible_individuals.append((indices.copy(), f, d, len(indices)))
+                            all_feasible_individuals.append((indices.copy(), f, d, len(indices), c))
                             feas_in_current_gen += 1
                             if first_feasible_gen is None:
                                 first_feasible_gen = gen + 1
@@ -430,11 +758,13 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
 
         n_feas = len(all_feasible_individuals)
         if n_feas > 0:
-            avg_diversity = np.mean([d for _, _, d, _ in all_feasible_individuals])
-            avg_n_foods = np.mean([nf for _, _, _, nf in all_feasible_individuals])
+            avg_diversity = np.mean([d for _, _, d, _, _ in all_feasible_individuals])
+            avg_n_foods = np.mean([nf for _, _, _, nf, _ in all_feasible_individuals])
+            avg_contrib = np.mean([cd for _, _, _, _, cd in all_feasible_individuals])
         else:
             avg_diversity = 0.0
             avg_n_foods = 0.0
+            avg_contrib = 0.0
 
         return {
             'ffg': first_feasible_gen if first_feasible_gen else n_generations + 1,
@@ -444,6 +774,7 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
             'n_evals': n_evals,
             'diversity': avg_diversity,
             'avg_n_foods': avg_n_foods,
+            'contrib': avg_contrib
         }
 
     except Exception as e:
