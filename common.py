@@ -102,13 +102,13 @@ def prefilter(matrix, target_array, col_idx):
     return np.where(valid)[0]
 
 
-def evaluate_batch(population, matrix, target_array, col_idx, meal_tags, max_categories):
+def evaluate_batch(population, matrix, target_array, col_idx, meal_tags, max_categories, has_meal_constraint=True):
     pop_size = len(population)
     scores = np.zeros(pop_size, dtype=np.float32)
     feasibles = np.zeros(pop_size, dtype=bool)
     diversities = np.zeros(pop_size, dtype=np.float32)
     n_foods_arr = np.zeros(pop_size, dtype=np.int32)
-    contrib_diversities = np.zeros(pop_size, dtype=np.float32)  # 新增
+    contrib_diversities = np.zeros(pop_size, dtype=np.float32)
 
     for i in range(pop_size):
         ind = population[i]
@@ -124,9 +124,15 @@ def evaluate_batch(population, matrix, target_array, col_idx, meal_tags, max_cat
         nutrient_penalty = float((below + above).sum())
         nutrient_feasible = nutrient_penalty < 1e-6
 
-        meals = meal_tags[ind]
-        meal_coverage = int(np.any(meals == 0)) + int(np.any(meals == 1)) + int(np.any(meals == 2))
-        meal_penalty = float((3 - meal_coverage) * MEAL_COVERAGE_WEIGHT)
+        # 三餐约束：仅当 has_meal_constraint=True 时检查
+        if has_meal_constraint:
+            meals = meal_tags[ind]
+            meal_coverage = int(np.any(meals == 0)) + int(np.any(meals == 1)) + int(np.any(meals == 2))
+            meal_penalty = float((3 - meal_coverage) * MEAL_COVERAGE_WEIGHT)
+            meal_feasible = (meal_coverage == 3)
+        else:
+            meal_penalty = 0.0
+            meal_feasible = True
 
         # 原类别 diversity
         categories = set()
@@ -137,16 +143,16 @@ def evaluate_batch(population, matrix, target_array, col_idx, meal_tags, max_cat
 
         # 新增：贡献度 diversity
         contrib_div = compute_contribution_diversity(ind, matrix, col_idx)
-        contrib_penalty = (1.0 - contrib_div) * DIVERSITY_WEIGHT * 0.5  # 权重可调
+        contrib_penalty = (1.0 - contrib_div) * DIVERSITY_WEIGHT * 0.5
 
         total_penalty = nutrient_penalty + meal_penalty + diversity_penalty + contrib_penalty
         fitness = 1.0 / (1.0 + max(0.0, total_penalty))
-        feasible = nutrient_feasible and (meal_coverage == 3)
+        feasible = nutrient_feasible and meal_feasible
 
         scores[i] = fitness
         feasibles[i] = feasible
         diversities[i] = diversity_score
-        contrib_diversities[i] = contrib_div  # 记录
+        contrib_diversities[i] = contrib_div
 
     return scores, feasibles, diversities, n_foods_arr, contrib_diversities
 

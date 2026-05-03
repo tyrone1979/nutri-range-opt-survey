@@ -16,8 +16,28 @@ algorithms:
 # ============================================================
 # E1 Scaling Experiment
 # ============================================================
-#scales: [500, 1000, 5000, 10000, 50000, 100000, 210000]
-scales: [500]
+scales:
+  - dataset: foods_com
+    size: 1500
+    label: "Foods.com (1.5K)"
+  - dataset: allrecipes
+    size: 1798
+    label: "Allrecipes (1.8K)"
+  - dataset: nhanes_full
+    size: 210620
+    label: "NHANES-210K"
+  - dataset: nhanes_sample
+    size: 5000
+    label: "NHANES-5K"
+  - dataset: nhanes_sample
+    size: 10000
+    label: "NHANES-10K"
+  - dataset: nhanes_sample
+    size: 50000
+    label: "NHANES-50K"
+  - dataset: nhanes_sample
+    size: 100000
+    label: "NHANES-100K"
 # ============================================================
 # E2 Sparsity Experiment
 # ============================================================
@@ -32,7 +52,7 @@ dimensions: [6, 9, 12, 16]
 # 通用参数
 # ============================================================
 population_size: 2000
-max_generations: 50
+max_generations: 20
 max_evaluations: 100000
 
 #targets_total: 30
