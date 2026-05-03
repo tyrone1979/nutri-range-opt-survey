@@ -1,0 +1,13 @@
+target
+"{""sodium"":[0,1500],""potassium"":[2600,5000],""calorie"":[1400,2300],""protein"":[0,50],""carb"":[200,350],""saturated_fat"":[0,9999999.0],""cholesterol"":[0,300],""calcium"":[1200,2000],""vitamin_d"":[20,100],""vitamin_c"":[75,2000]}"
+"{""fiber"":[31,99999],""calorie"":[1800,3400],""protein"":[0,70],""carb"":[300,550],""saturated_fat"":[0,25],""cholesterol"":[0,200],""sodium"":[0,1500],""potassium"":[3400,5000]}"
+"{""sodium"":[0,1500],""potassium"":[3400,5000],""calorie"":[1700,3300],""protein"":[0,60],""carb"":[300,500],""saturated_fat"":[0,9999999.0],""cholesterol"":[0,300],""calcium"":[1000,2500],""vitamin_d"":[15,100],""vitamin_c"":[90,2000]}"
+"{""sodium"":[0,1500],""potassium"":[3400,5000],""calorie"":[1900,3500],""protein"":[0,70],""carb"":[300,550],""saturated_fat"":[0,9999999.0],""cholesterol"":[0,300]}"
+"{""sugar"":[0,25],""calorie"":[0,3300],""protein"":[0,80],""carb"":[300,500],""saturated_fat"":[0,20],""cholesterol"":[0,300]}"
+"{""sugar"":[0,36],""calorie"":[0,4900],""protein"":[0,110],""carb"":[450,750],""saturated_fat"":[0,30],""cholesterol"":[0,300],""sodium"":[0,1500],""potassium"":[3400,5000]}"
+"{""calorie"":[1600,3100],""protein"":[0,60],""carb"":[300,500],""saturated_fat"":[0,9999999.0],""cholesterol"":[0,300],""iron"":[8,45],""vitamin_c"":[90,2000],""folic_acid"":[400,1000],""vitamin_b12"":[0,2.4]}"
+"{""sugar"":[0,25],""calorie"":[0,3000],""protein"":[0,60],""carb"":[250,450],""saturated_fat"":[0,20],""cholesterol"":[0,300],""sodium"":[0,1500],""potassium"":[2600,5000],""fiber"":[25,99999]}"
+"{""fiber"":[38,99999],""sugar"":[0,36],""sodium"":[0,1500],""calorie"":[2100,3600],""protein"":[60,9999999.0],""carb"":[350,550],""saturated_fat"":[0,9999999.0],""cholesterol"":[0,300]}"
+"{""sugar"":[0,25],""calorie"":[0,2900],""protein"":[70,9999999.0],""carb"":[250,450],""saturated_fat"":[0,20],""cholesterol"":[0,300],""fiber"":[21,99999],""sodium"":[0,1500]}"
+"{""sugar"":[0,25],""calorie"":[0,2900],""protein"":[0,70],""carb"":[250,450],""saturated_fat"":[0,20],""cholesterol"":[0,200],""fiber"":[21,99999],""sodium"":[0,1500],""potassium"":[2600,5000]}"
+"{""sugar"":[0,36],""calorie"":[0,4300],""protein"":[90,9999999.0],""carb"":[400,650],""saturated_fat"":[0,30],""cholesterol"":[0,300],""sodium"":[0,1500],""potassium"":[3400,5000],""fiber"":[31,99999]}"
