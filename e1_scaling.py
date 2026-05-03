@@ -156,7 +156,7 @@ def generate_synthetic_food_space(n_foods: int, n_nutrients: int, seed: int = 42
     )
 
 
-def load_targets(n_targets: int = 30, seed: int = 42) -> List[Target]:
+def load_targets(n_targets: int = 30, seed: int = 42, exp_type: str = 'scaling') -> List[Target]:
     import common as cm
 
     nhanes_path = 'data/nhanes.csv'
@@ -164,37 +164,121 @@ def load_targets(n_targets: int = 30, seed: int = 42) -> List[Target]:
     target_path = 'data/target.csv'
 
     _, _, nutrients, all_targets = cm.load_data(nhanes_path, food_type_path, target_path)
-
     rng = np.random.default_rng(seed)
 
-    # 如果请求数量小于等于总数，直接随机抽样
-    if n_targets >= len(all_targets):
-        selected = all_targets
-    else:
-        # 按维度分层抽样
-        low_dim = [t for t in all_targets if len(t['nutrients']) <= 6]
-        med_dim = [t for t in all_targets if 7 <= len(t['nutrients']) <= 9]
-        high_dim = [t for t in all_targets if len(t['nutrients']) >= 10]
+    # 先统计实际维度分布
+    dim_counts = {}
+    for t in all_targets:
+        d = len(t['nutrients'])
+        dim_counts[d] = dim_counts.get(d, 0) + 1
+    dims_available = sorted(dim_counts.keys())
+    print(f"  Available dimensions: {dict(sorted(dim_counts.items()))}")
 
-        # 按比例分配
-        n_low = max(1, int(n_targets * len(low_dim) / len(all_targets)))
-        n_med = max(1, int(n_targets * len(med_dim) / len(all_targets)))
-        n_high = n_targets - n_low - n_med
+    # ============================================================
+    # E1: Scaling — 混合所有维度，按范围宽度分 3 层
+    # ============================================================
+    if exp_type == 'scaling':
+        # 不固定维度，只用维度 >= 6 的 target
+        valid = [t for t in all_targets if len(t['nutrients']) >= 6]
 
+        scored = []
+        for t in valid:
+            ranges = t['target_array'][:, 1] - t['target_array'][:, 0]
+            uppers = t['target_array'][:, 1]
+            normalized = np.mean(ranges / (uppers + 1e-6))
+            scored.append((t, normalized))
+
+        scored.sort(key=lambda x: x[1])
+        n = len(scored)
+
+        tight = [s[0] for s in scored[:n // 3]]
+        medium = [s[0] for s in scored[n // 3: 2 * n // 3]]
+        wide = [s[0] for s in scored[2 * n // 3:]]
+
+        print(f"  E1: tight={len(tight)}, medium={len(medium)}, wide={len(wide)}")
+
+        n_per = max(1, n_targets // 3)
         selected = []
-        selected.extend(rng.choice(low_dim, size=min(n_low, len(low_dim)), replace=False))
-        selected.extend(rng.choice(med_dim, size=min(n_med, len(med_dim)), replace=False))
-        selected.extend(rng.choice(high_dim, size=min(n_high, len(high_dim)), replace=False))
+        selected.extend(rng.choice(tight, size=min(n_per, len(tight)), replace=False))
+        selected.extend(rng.choice(medium, size=min(n_per, len(medium)), replace=False))
+        selected.extend(rng.choice(wide, size=min(n_per, len(wide)), replace=False))
 
-        # 补齐到 n_targets
-        if len(selected) < n_targets:
-            remaining = [t for t in all_targets if t not in selected]
-            n_extra = min(n_targets - len(selected), len(remaining))
-            if n_extra > 0:
-                extra = rng.choice(remaining, size=n_extra, replace=False)
-                selected.extend(extra)
+    # ============================================================
+    # E2: Sparsity — 按约束松紧度分层
+    # ============================================================
+    elif exp_type == 'sparsity':
+        valid = [t for t in all_targets if len(t['nutrients']) >= 6]
 
-    # 截断到 n_targets
+        scored = []
+        for t in valid:
+            ranges = t['target_array'][:, 1] - t['target_array'][:, 0]
+            uppers = t['target_array'][:, 1]
+            ratio = np.mean(ranges / (uppers + 1e-6))
+            scored.append((t, ratio))
+
+        scored.sort(key=lambda x: x[1])
+        n = len(scored)
+
+        tight = [s[0] for s in scored[:n // 3]]
+        normal = [s[0] for s in scored[n // 3: 2 * n // 3]]
+        loose = [s[0] for s in scored[2 * n // 3:]]
+
+        n_per = max(1, n_targets // 3)
+        selected = []
+        selected.extend(rng.choice(tight, size=min(n_per, len(tight)), replace=False))
+        selected.extend(rng.choice(normal, size=min(n_per, len(normal)), replace=False))
+        selected.extend(rng.choice(loose, size=min(n_per, len(loose)), replace=False))
+
+    # ============================================================
+    # E3: Dimension — 按实际维度分布取 4 个层级
+    # ============================================================
+    elif exp_type == 'dimension':
+        # 从实际维度中均匀取 4 个层级
+        if len(dims_available) >= 4:
+            indices = np.linspace(0, len(dims_available) - 1, 4, dtype=int)
+            chosen_dims = [dims_available[i] for i in indices]
+        else:
+            chosen_dims = dims_available
+
+        n_per = max(1, n_targets // len(chosen_dims))
+        selected = []
+        for dim in chosen_dims:
+            group = [t for t in all_targets if len(t['nutrients']) == dim]
+            if len(group) > 0:
+                selected.extend(rng.choice(group, size=min(n_per, len(group)), replace=False))
+
+        print(f"  E3 using dims={chosen_dims}")
+
+    # ============================================================
+    # default
+    # ============================================================
+    else:
+        if n_targets >= len(all_targets):
+            selected = all_targets
+        else:
+            low_dim = [t for t in all_targets if len(t['nutrients']) <= 6]
+            med_dim = [t for t in all_targets if 7 <= len(t['nutrients']) <= 9]
+            high_dim = [t for t in all_targets if len(t['nutrients']) >= 10]
+
+            n_low = max(1, int(n_targets * len(low_dim) / len(all_targets)))
+            n_med = max(1, int(n_targets * len(med_dim) / len(all_targets)))
+            n_high = n_targets - n_low - n_med
+
+            selected = []
+            selected.extend(rng.choice(low_dim, size=min(n_low, len(low_dim)), replace=False))
+            selected.extend(rng.choice(med_dim, size=min(n_med, len(med_dim)), replace=False))
+            selected.extend(rng.choice(high_dim, size=min(n_high, len(high_dim)), replace=False))
+
+    # ============================================================
+    # 补齐 + 截断
+    # ============================================================
+    if len(selected) < n_targets:
+        remaining = [t for t in all_targets if t not in selected]
+        n_extra = min(n_targets - len(selected), len(remaining))
+        if n_extra > 0:
+            extra = rng.choice(remaining, size=n_extra, replace=False)
+            selected.extend(extra)
+
     targets = []
     for t in selected[:n_targets]:
         targets.append(Target(
@@ -206,8 +290,13 @@ def load_targets(n_targets: int = 30, seed: int = 42) -> List[Target]:
             target_array=t['target_array']
         ))
 
-    return targets
+    print(f"  Selected {len(targets)} targets for {exp_type}:")
+    for t in targets[:5]:
+        print(f"    {t.target_id}: {t.n_dims} dims, nutrients={t.nutrient_names[:4]}...")
+    if len(targets) > 5:
+        print(f"    ... and {len(targets) - 5} more")
 
+    return targets
 
 # ============================================================
 # 3. 算法适配器
