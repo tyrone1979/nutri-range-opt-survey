@@ -42,11 +42,12 @@ class FoodSpace:
 
 @dataclass
 class Target:
-    """统一目标接口"""
     target_id: str
-    lower_bounds: np.ndarray  # (n_nutrients,)
-    upper_bounds: np.ndarray  # (n_nutrients,)
+    lower_bounds: np.ndarray
+    upper_bounds: np.ndarray
     nutrient_names: List[str]
+    col_idx: np.ndarray  # 新增
+    target_array: np.ndarray  # 新增
 
     @property
     def n_dims(self):
@@ -156,7 +157,6 @@ def generate_synthetic_food_space(n_foods: int, n_nutrients: int, seed: int = 42
 
 
 def load_targets(n_targets: int = 30, seed: int = 42) -> List[Target]:
-    """分层抽样 target"""
     import common as cm
 
     nhanes_path = 'data/nhanes.csv'
@@ -167,29 +167,43 @@ def load_targets(n_targets: int = 30, seed: int = 42) -> List[Target]:
 
     rng = np.random.default_rng(seed)
 
-    # 按维度分层
-    low_dim = [t for t in all_targets if len(t['nutrients']) <= 6]
-    med_dim = [t for t in all_targets if 7 <= len(t['nutrients']) <= 9]
-    high_dim = [t for t in all_targets if len(t['nutrients']) >= 10]
+    # 如果请求数量小于等于总数，直接随机抽样
+    if n_targets >= len(all_targets):
+        selected = all_targets
+    else:
+        # 按维度分层抽样
+        low_dim = [t for t in all_targets if len(t['nutrients']) <= 6]
+        med_dim = [t for t in all_targets if 7 <= len(t['nutrients']) <= 9]
+        high_dim = [t for t in all_targets if len(t['nutrients']) >= 10]
 
-    selected = []
-    selected.extend(rng.choice(low_dim, size=min(5, len(low_dim)), replace=False))
-    selected.extend(rng.choice(med_dim, size=min(20, len(med_dim)), replace=False))
-    selected.extend(rng.choice(high_dim, size=min(5, len(high_dim)), replace=False))
+        # 按比例分配
+        n_low = max(1, int(n_targets * len(low_dim) / len(all_targets)))
+        n_med = max(1, int(n_targets * len(med_dim) / len(all_targets)))
+        n_high = n_targets - n_low - n_med
 
-    # 补齐到 n_targets
-    if len(selected) < n_targets:
-        remaining = [t for t in all_targets if t not in selected]
-        extra = rng.choice(remaining, size=n_targets - len(selected), replace=False)
-        selected.extend(extra)
+        selected = []
+        selected.extend(rng.choice(low_dim, size=min(n_low, len(low_dim)), replace=False))
+        selected.extend(rng.choice(med_dim, size=min(n_med, len(med_dim)), replace=False))
+        selected.extend(rng.choice(high_dim, size=min(n_high, len(high_dim)), replace=False))
 
+        # 补齐到 n_targets
+        if len(selected) < n_targets:
+            remaining = [t for t in all_targets if t not in selected]
+            n_extra = min(n_targets - len(selected), len(remaining))
+            if n_extra > 0:
+                extra = rng.choice(remaining, size=n_extra, replace=False)
+                selected.extend(extra)
+
+    # 截断到 n_targets
     targets = []
-    for t in selected:
+    for t in selected[:n_targets]:
         targets.append(Target(
             target_id=f"target_{t['idx']:04d}",
             lower_bounds=t['target_array'][:, 0],
             upper_bounds=t['target_array'][:, 1],
-            nutrient_names=t['nutrients']
+            nutrient_names=t['nutrients'],
+            col_idx=t['col_idx'],
+            target_array=t['target_array']
         ))
 
     return targets

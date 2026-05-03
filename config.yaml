@@ -36,8 +36,9 @@ max_generations: 50
 max_evaluations: 100000
 
 #targets_total: 30
-targets_total: 12
-repeats: 10
+targets_total: 2
+#repeats: 10
+repeats: 1
 seed: 42
 
 default_dim: 10
