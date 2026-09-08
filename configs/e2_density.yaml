@@ -1,0 +1,10 @@
+# Feasible-density precomputation for E2 (no EA runs)
+targets_file: data/representative_targets.csv
+targets_total: 12
+scale: 10000
+density_samples: 2000
+sparsity_factors: [0.5, 1.0, 1.5]
+seed: 42
+cap_samples: 600
+cap_percentile: 99.0
+output: results/target_analysis/feasible_density.csv

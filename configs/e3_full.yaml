@@ -1,0 +1,27 @@
+experiment: e3_dimension
+result_class: PRIMARY
+seed: 42
+population_size: 500
+max_evaluations: 100000
+max_generations: 10000
+early_stop_feasible: null
+targets_total: 12
+repeats: 10
+targets_file: data/representative_targets.csv
+dimensions: [6, 9, 12, 16]
+algorithms:
+  - BMOEA
+  - ACMO-Diet
+  - MA
+  - Random
+  - NSGA2
+  - RVEA
+  - CTAEA
+  - SPEA2
+scales:
+  - dataset: nhanes_sample
+    size: 10000
+    label: "NHANES-10K"
+output_dir: results/raw
+log_dir: results/logs
+output_name: e3_dimension_full.csv

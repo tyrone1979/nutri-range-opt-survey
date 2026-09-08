@@ -1,0 +1,32 @@
+# Pilot config — correctness check before full runs
+experiment: e1_pilot
+result_class: PILOT
+seed: 42
+population_size: 100
+max_evaluations: 2000
+max_generations: 50
+early_stop_feasible: null
+targets_total: 3
+repeats: 3
+targets_file: data/representative_targets.csv
+algorithms:
+  - BMOEA
+  - ACMO-Diet
+  - MA
+  - Random
+  - Greedy
+  - RandomRepair
+  - NSGA2
+  - RVEA
+  - CTAEA
+  - SPEA2
+scales:
+  - dataset: nhanes_sample
+    size: 1500
+    label: "NHANES-1.5K"
+  - dataset: foods_com
+    size: 1500
+    label: "Foods.com"
+output_dir: results/raw
+log_dir: results/logs
+output_name: e1_pilot.csv

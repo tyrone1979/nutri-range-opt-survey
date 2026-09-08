@@ -1,0 +1,13 @@
+{
+  "input": "results/raw/e2_pilot.csv",
+  "n_rows": 432,
+  "n_targets": 6,
+  "n_algos": 8,
+  "factors": [
+    0.5,
+    1.0,
+    1.5
+  ],
+  "repeats": 3,
+  "result_class": "PILOT"
+}

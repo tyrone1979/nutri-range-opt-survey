@@ -1,0 +1,71 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs,hyperref,verbatim,graphicx}
+\title{NutriOpt-Bench Supplementary Material}
+\author{NutriOpt-Bench Project\\
+\textit{Companion to the TEVC-oriented RCFA survey+benchmark draft.}}
+\date{\today}
+\begin{document}
+\maketitle
+
+\section{Metric definitions}
+See \texttt{docs/METRIC\_DEFINITIONS.md}.
+Primary reporting order: FHR, FFG\_evals, FSC, then BestFit / diversity.
+
+\section{RCFA freeze}
+\texttt{docs/RCFA\_FORMULATION.md} --- binary decisions, interval box, cardinality, optional meals; diversity soft-only.
+
+\section{Benchmark protocol}
+\texttt{docs/BENCHMARK\_PROTOCOL.md}.
+PRIMARY: 12 targets $\times$ 10 seeds, pop$=500$, $10^5$ evaluations, early-stop off.
+PRIMARY\_LITE (E2 bridge): 12$\times$5, pop$=200$, $2\cdot10^4$ evaluations.
+
+\section{Fairness}
+\texttt{docs/FAIRNESS\_AUDIT.md}.
+Disclose MA/Greedy slight overshoot; RandomRepair under-budget on E2 PRIMARY\_LITE (fixed thereafter).
+
+\section{Claim--evidence}
+\texttt{docs/CLAIM\_EVIDENCE\_MATRIX.md}.
+Forbidden: overall champion; clinical claims; legacy DEBUG E1 CSV as finding.
+
+\section{Mechanism matrix}
+\texttt{docs/ALGORITHM\_MECHANISM\_MATRIX.md}.
+
+\section{Reproducibility commands}
+\begin{verbatim}
+python3 validate_data.py
+python3 analyze_target_coverage.py
+python3 run_exact.py configs/exact_small.yaml
+
+# E2
+python3 run_e2.py --config configs/e2_primary_lite.yaml --stage main
+python3 analyze_e2.py --input results/raw/e2_sparsity_primary_lite.csv \
+  --tag e2_primary_lite
+python3 run_e2.py --config configs/e2_full.yaml --stage main   # full PRIMARY
+
+# E1 / E3 PRIMARY (fair runner)
+python3 run_benchmark.py --config configs/e1_full.yaml --stage main
+python3 run_e3.py --config configs/e3_full.yaml --stage main
+\end{verbatim}
+
+\section{Result classes}
+\begin{itemize}
+\item DEBUG\_RESULT --- legacy unequal-budget; never cite as finding.
+\item PROFILE / PILOT --- pipeline checks only.
+\item PRIMARY\_LITE --- multi-seed bridge; label explicitly.
+\item PRIMARY / ROBUSTNESS / EXACT --- claim-eligible when complete.
+\end{itemize}
+
+\section{Literature}
+Seed matrix: \texttt{literature/literature\_matrix.csv}.
+Full PRISMA screening pending; do not invent citations.
+
+\section{E2 PRIMARY\_LITE artifacts}
+\begin{verbatim}
+results/raw/e2_sparsity_primary_lite.csv
+results/tables/e2_primary_lite_*.csv
+results/figures/fig_e2_primary_lite_*.png
+results/statistics/E2_PRIMARY_LITE_REPORT.md
+\end{verbatim}
+
+\end{document}

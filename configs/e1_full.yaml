@@ -1,0 +1,50 @@
+# Full E1 production protocol (do not run until pilot validated)
+experiment: e1_scaling
+result_class: PRIMARY
+seed: 42
+population_size: 500
+max_evaluations: 100000
+max_generations: 10000
+early_stop_feasible: null
+targets_total: 12
+repeats: 10
+targets_file: data/representative_targets.csv
+algorithms:
+  - BMOEA
+  - ACMO-Diet
+  - MA
+  - Random
+  - Greedy
+  - RandomRepair
+  - NSGA2
+  - RVEA
+  - CTAEA
+  - SPEA2
+scales:
+  - dataset: foods_com
+    size: 1500
+    label: "Foods.com (~1.5K)"
+  - dataset: allrecipes
+    size: 1800
+    label: "Allrecipes (~1.8K)"
+  - dataset: nhanes_sample
+    size: 5000
+    label: "NHANES-5K"
+  - dataset: nhanes_sample
+    size: 10000
+    label: "NHANES-10K"
+  - dataset: nhanes_sample
+    size: 25000
+    label: "NHANES-25K"
+  - dataset: nhanes_sample
+    size: 50000
+    label: "NHANES-50K"
+  - dataset: nhanes_sample
+    size: 100000
+    label: "NHANES-100K"
+  - dataset: nhanes_full
+    size: 210620
+    label: "NHANES-full"
+output_dir: results/raw
+log_dir: results/logs
+output_name: e1_scaling_full.csv

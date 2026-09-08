@@ -1,0 +1,18 @@
+experiment: ablation
+result_class: ABLATION
+seed: 42
+population_size: 200
+max_evaluations: 20000
+targets_total: 12
+repeats: 5
+targets_file: data/representative_targets.csv
+ablations:
+  - meal_constraint: [true, false]
+  - diversity: [none, category, full]
+algorithms: [BMOEA, ACMO-Diet, NSGA2, Random]
+scales:
+  - dataset: nhanes_sample
+    size: 5000
+    label: "NHANES-5K"
+output_dir: results/raw
+output_name: ablation.csv

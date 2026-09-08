@@ -1,0 +1,13 @@
+target_id,dim,scale,candidate_limit,status,feasible,optimal,objective,n_selected,runtime,violation,message
+rep_000,10,500,300,Optimal,False,False,1.2999999,14,0.1556506156921386,1.2999999,Optimal
+rep_001,8,500,300,Optimal,True,True,0.0,12,0.0665650367736816,0.0,Optimal
+rep_002,10,500,300,Optimal,True,True,0.0,11,0.1016013622283935,0.0,Optimal
+rep_003,7,500,300,Optimal,True,True,0.0,6,0.0537471771240234,0.0,Optimal
+rep_004,6,500,300,Optimal,True,True,0.0,11,0.0686826705932617,0.0,Optimal
+rep_005,8,500,300,Optimal,False,False,15.260001,15,0.1573774814605713,15.260001,Optimal
+rep_006,9,500,300,Optimal,True,True,0.0,15,0.0707502365112304,0.0,Optimal
+rep_007,9,500,300,Optimal,True,True,0.0,11,0.0873501300811767,0.0,Optimal
+rep_008,8,500,300,Optimal,False,False,3.3200006,14,0.197258710861206,3.3200006,Optimal
+rep_009,8,500,300,Optimal,True,True,0.0,14,0.1108515262603759,0.0,Optimal
+rep_010,9,500,300,Optimal,True,True,0.0,11,0.0841424465179443,0.0,Optimal
+rep_011,9,500,300,Optimal,False,False,9.5300005,15,0.156095266342163,9.5300005,Optimal

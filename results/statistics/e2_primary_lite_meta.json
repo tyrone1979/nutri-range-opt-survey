@@ -1,0 +1,13 @@
+{
+  "input": "results/raw/e2_sparsity_primary_lite.csv",
+  "n_rows": 1800,
+  "n_targets": 12,
+  "n_algos": 10,
+  "factors": [
+    0.5,
+    1.0,
+    1.5
+  ],
+  "repeats": 5,
+  "result_class": "PRIMARY_LITE"
+}

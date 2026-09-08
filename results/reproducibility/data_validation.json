@@ -1,0 +1,60 @@
+{
+  "nhanes": {
+    "file": "data/nhanes.csv",
+    "n_rows": 213569,
+    "n_unique_food_id": 9640,
+    "duplicate_food_id_rows": 203929,
+    "nan_rate": {
+      "calorie": 4.6823274913494e-06,
+      "protein": 4.6823274913494e-06,
+      "carb": 4.6823274913494e-06,
+      "sugar": 4.6823274913494e-06,
+      "fiber": 4.6823274913494e-06,
+      "saturated_fat": 4.6823274913494e-06,
+      "cholesterol": 4.6823274913494e-06,
+      "folic_acid": 4.6823274913494e-06,
+      "vitamin_b12": 4.6823274913494e-06,
+      "vitamin_c": 4.6823274913494e-06,
+      "vitamin_d": 0.31532666257743397,
+      "calcium": 4.6823274913494e-06,
+      "phosphorus": 4.6823274913494e-06,
+      "potassium": 4.6823274913494e-06,
+      "iron": 4.6823274913494e-06,
+      "sodium": 4.6823274913494e-06
+    },
+    "inf_count": 0,
+    "negative_nutrient_cells": 0,
+    "zero_rows": 143,
+    "grams_min": 0.01,
+    "grams_max": 17400.0
+  },
+  "targets": {
+    "file": "data/target.csv",
+    "n": 4019,
+    "parse_failures": 0,
+    "dim_min": 6,
+    "dim_max": 15,
+    "dim_mean": 8.723314257277929,
+    "impossible_bound_pairs": 0
+  },
+  "food_type_rows": 45083,
+  "representative_12": 12,
+  "representative_45": 45,
+  "representative_100": 100,
+  "food_data": {
+    "n": 1584,
+    "cols": [
+      "food_name",
+      "calories",
+      "protein",
+      "carbs",
+      "fat",
+      "rating",
+      "category",
+      "total_time"
+    ]
+  },
+  "allrecipes_json": {
+    "n": 1798
+  }
+}

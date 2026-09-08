@@ -1,0 +1,16 @@
+experiment: exact_small
+result_class: EXACT
+seed: 42
+candidate_limit: 300
+time_limit: 60
+min_foods: 5
+max_foods: 15
+has_meal_constraint: true
+targets_total: 12
+targets_file: data/representative_targets.csv
+scales:
+  - dataset: nhanes_sample
+    size: 500
+    label: "NHANES-500"
+output_dir: results/raw
+output_name: exact_small.csv

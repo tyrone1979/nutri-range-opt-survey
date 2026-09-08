@@ -19,7 +19,8 @@ class BMOEA:
     def run(self, target_array, col_idx, pop_size=POP_SIZE,
             n_generations=N_GENERATIONS, max_evals=MAX_EVALS,
             crossover_rate=0.2, mutation_rate=0.9,
-            min_foods=None, max_foods=None , has_meal_constraint=True):
+            min_foods=None, max_foods=None , has_meal_constraint=True,
+            early_stop_feasible=None):
 
         if min_foods is None:
             min_foods = MIN_FOODS
@@ -34,6 +35,7 @@ class BMOEA:
             population.append(selected)
 
         ffg = None
+        ffg_evals = None
         feasible_found = False
         elite_size = 0
         n_evals = 0
@@ -49,11 +51,12 @@ class BMOEA:
             n_feas = feasibles.sum()
             if n_feas > 0 and not feasible_found:
                 ffg = gen + 1
+                ffg_evals = n_evals
                 feasible_found = True
                 if self.debug:
                     print(f"      [BMOEA] Gen {gen + 1}: FIRST FEASIBLE! count={n_feas}")
 
-            if n_feas >= 20:
+            if early_stop_feasible is not None and n_feas >= early_stop_feasible:
                 if self.debug:
                     print(f"      [BMOEA] Gen {gen + 1}: Early stop, {n_feas} feasible")
                 break
@@ -120,6 +123,7 @@ class BMOEA:
 
         return [{
             'ffg': ffg if ffg else n_generations + 1,
+            'ffg_evals': ffg_evals if ffg_evals else n_evals,
             'fhr': 1.0 if np.any(final_feasibles) else 0.0,
             'fsc': int(final_feasibles.sum()),
             'best_fitness': float(final_scores.max()),
@@ -144,7 +148,8 @@ class ACMODiet:
 
     def run(self, target_array, col_idx, pop_size=POP_SIZE,
             n_generations=N_GENERATIONS, max_evals=MAX_EVALS,
-            min_foods=None, max_foods=None, has_meal_constraint=True):
+            min_foods=None, max_foods=None, has_meal_constraint=True,
+            early_stop_feasible=None):
 
         if min_foods is None:
             min_foods = MIN_FOODS
@@ -163,6 +168,7 @@ class ACMODiet:
             population.append(ind)
 
         ffg = None
+        ffg_evals = None
         n_evals = 0
 
         for gen in range(n_generations):
@@ -176,10 +182,11 @@ class ACMODiet:
             n_feas = feasibles.sum()
             if n_feas > 0 and ffg is None:
                 ffg = gen + 1
+                ffg_evals = n_evals
                 if self.debug:
                     print(f"      [ACMO] Gen {gen + 1}: FIRST FEASIBLE! count={n_feas}")
 
-            if n_feas >= 20:
+            if early_stop_feasible is not None and n_feas >= early_stop_feasible:
                 if self.debug:
                     print(f"      [ACMO] Gen {gen + 1}: Early stop, {n_feas} feasible")
                 break
@@ -245,6 +252,7 @@ class ACMODiet:
 
         return [{
             'ffg': ffg if ffg else n_generations + 1,
+            'ffg_evals': ffg_evals if ffg_evals else n_evals,
             'fhr': 1.0 if np.any(final_feasibles) else 0.0,
             'fsc': int(final_feasibles.sum()),
             'best_fitness': float(final_scores.max()),
@@ -269,7 +277,8 @@ class MemeticAlgorithm:
 
     def run(self, target_array, col_idx, pop_size=POP_SIZE,
             n_generations=N_GENERATIONS, max_evals=MAX_EVALS,
-            min_foods=None, max_foods=None,has_meal_constraint=True):
+            min_foods=None, max_foods=None,has_meal_constraint=True,
+            early_stop_feasible=None):
 
         if min_foods is None:
             min_foods = MIN_FOODS
@@ -284,6 +293,7 @@ class MemeticAlgorithm:
             population.append(selected)
 
         ffg = None
+        ffg_evals = None
         feasible_found = False
         n_evals = 0
         best_feasible = None
@@ -310,9 +320,10 @@ class MemeticAlgorithm:
                     best_feasible = population[feas_indices[best_local_idx]].copy()
                 if not feasible_found:
                     ffg = gen + 1
+                    ffg_evals = n_evals
                     feasible_found = True
 
-            if n_feas >= 20:
+            if early_stop_feasible is not None and n_feas >= early_stop_feasible:
                 break
 
             if n_feas > 0 and gen % 3 == 0:
@@ -459,6 +470,7 @@ class MemeticAlgorithm:
 
         return [{
             'ffg': ffg if ffg else n_generations + 1,
+            'ffg_evals': ffg_evals if ffg_evals else n_evals,
             'fhr': 1.0 if np.any(final_feasibles) else 0.0,
             'fsc': int(final_feasibles.sum()),
             'best_fitness': float(final_scores.max()),
@@ -616,14 +628,17 @@ class IntSampling(Sampling):
 
 def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all_valid_idx,
                         max_categories, pop_size=2000, n_generations=50, debug=False,
-                        min_foods=None, max_foods=None,has_meal_constraint=True):
+                        min_foods=None, max_foods=None, has_meal_constraint=True,
+                        seed=42, max_evals=None, early_stop_feasible=None):
     if min_foods is None:
         min_foods = MIN_FOODS
     if max_foods is None:
         max_foods = MAX_FOODS
+    if max_evals is None:
+        max_evals = MAX_EVALS
 
     default_result = {
-        'ffg': n_generations + 1, 'fhr': 0.0, 'fsc': 0,
+        'ffg': n_generations + 1, 'ffg_evals': max_evals, 'fhr': 0.0, 'fsc': 0,
         'best_fitness': 0.0, 'n_evals': 0, 'diversity': 0.0,
         'avg_n_foods': 0.0, 'contrib': 0.0,
     }
@@ -662,14 +677,20 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
         else:
             return default_result
 
-        algorithm.setup(problem, termination=('n_gen', n_generations), seed=42)
+        # Generations capped by eval budget
+        max_gen_by_budget = max(1, int(np.ceil(max_evals / max(pop_size, 1))))
+        n_generations = min(n_generations, max_gen_by_budget)
+        algorithm.setup(problem, termination=('n_gen', n_generations), seed=int(seed))
 
         n_evals = 0
         first_feasible_gen = None
+        first_feasible_evals = None
         best_fitness = 0.0
         all_feasible_individuals = []
 
         for gen in range(n_generations):
+            if n_evals >= max_evals:
+                break
             algorithm.next()
             n_evals += pop_size
 
@@ -690,9 +711,10 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
                             feas_in_current_gen += 1
                             if first_feasible_gen is None:
                                 first_feasible_gen = gen + 1
+                                first_feasible_evals = n_evals
                                 if debug:
                                     print(f"      [pymoo {algo_name}] Gen {gen + 1}: FIRST FEASIBLE!")
-                if feas_in_current_gen >= 20:
+                if early_stop_feasible is not None and feas_in_current_gen >= early_stop_feasible:
                     break
 
         n_feas = len(all_feasible_individuals)
@@ -707,6 +729,7 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
 
         return {
             'ffg': first_feasible_gen if first_feasible_gen else n_generations + 1,
+            'ffg_evals': first_feasible_evals if first_feasible_evals else n_evals,
             'fhr': 1.0 if n_feas > 0 else 0.0,
             'fsc': n_feas,
             'best_fitness': best_fitness,

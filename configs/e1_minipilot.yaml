@@ -1,0 +1,26 @@
+# Mini-pilot: feasible-aware quick check
+experiment: e1_minipilot
+result_class: PILOT
+seed: 42
+population_size: 80
+max_evaluations: 2400
+max_generations: 80
+early_stop_feasible: null
+targets_total: 4
+repeats: 2
+targets_file: data/representative_targets.csv
+algorithms:
+  - BMOEA
+  - ACMO-Diet
+  - MA
+  - Random
+  - Greedy
+  - NSGA2
+  - SPEA2
+scales:
+  - dataset: nhanes_sample
+    size: 2000
+    label: "NHANES-2K"
+output_dir: results/raw
+log_dir: results/logs
+output_name: e1_minipilot.csv

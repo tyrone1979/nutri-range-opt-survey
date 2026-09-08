@@ -1,0 +1,31 @@
+# E2 pilot — validate sanitized sparsity + fair budget before full primary
+experiment: e2_sparsity
+result_class: PILOT
+seed: 42
+population_size: 100
+max_evaluations: 4000
+max_generations: 200
+early_stop_feasible: null
+targets_total: 6
+repeats: 3
+targets_file: data/representative_targets.csv
+sparsity_factors: [0.5, 1.0, 1.5]
+density_samples: 800
+cap_samples: 500
+cap_percentile: 99.0
+algorithms:
+  - BMOEA
+  - ACMO-Diet
+  - MA
+  - Random
+  - Greedy
+  - RandomRepair
+  - NSGA2
+  - SPEA2
+scales:
+  - dataset: nhanes_sample
+    size: 5000
+    label: "NHANES-5K"
+output_dir: results/raw
+log_dir: results/logs
+output_name: e2_pilot.csv

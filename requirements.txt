@@ -7,8 +7,10 @@ scikit-learn>=1.3.0
 
 # 数据可视化
 matplotlib>=3.7.0
-pymoo
+pymoo>=0.6.0
 numba
-# 可选：用于更大规模食物数据库处理
+# 数据与配置
 pandas>=2.0.0
 pyyaml
+# Exact baseline
+pulp>=2.7.0

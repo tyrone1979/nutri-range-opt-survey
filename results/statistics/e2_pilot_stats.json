@@ -1,0 +1,246 @@
+{
+  "0.5": {
+    "algorithms": [
+      "ACMO-Diet",
+      "BMOEA",
+      "Greedy",
+      "MA",
+      "NSGA2",
+      "Random",
+      "RandomRepair",
+      "SPEA2"
+    ],
+    "n_targets": 6,
+    "friedman": {
+      "stat": 10.347826086956452,
+      "p": 0.16970431071410405
+    },
+    "nemenyi": {
+      "mean_ranks": {
+        "ACMO-Diet": 1.3333333333333333,
+        "BMOEA": 1.8333333333333333,
+        "Greedy": 3.8333333333333335,
+        "MA": 4.0,
+        "NSGA2": 4.333333333333333,
+        "Random": 6.333333333333333,
+        "RandomRepair": 6.833333333333333,
+        "SPEA2": 7.5
+      },
+      "critical_difference": 4.286481307552852,
+      "significant_pairs": [
+        {
+          "a": "ACMO-Diet",
+          "b": "Random",
+          "rank_diff": 5.0,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "RandomRepair",
+          "rank_diff": 5.5,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "SPEA2",
+          "rank_diff": 6.166666666666667,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "BMOEA",
+          "b": "Random",
+          "rank_diff": 4.5,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "BMOEA",
+          "b": "RandomRepair",
+          "rank_diff": 5.0,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "BMOEA",
+          "b": "SPEA2",
+          "rank_diff": 5.666666666666667,
+          "cd": 4.286481307552852
+        }
+      ]
+    },
+    "wilcoxon": {},
+    "mean_ranks": {
+      "ACMO-Diet": 1.3333333333333333,
+      "BMOEA": 1.8333333333333333,
+      "Greedy": 3.8333333333333335,
+      "MA": 4.0,
+      "NSGA2": 4.333333333333333,
+      "Random": 6.333333333333333,
+      "RandomRepair": 6.833333333333333,
+      "SPEA2": 7.5
+    }
+  },
+  "1.0": {
+    "algorithms": [
+      "ACMO-Diet",
+      "BMOEA",
+      "Greedy",
+      "MA",
+      "NSGA2",
+      "Random",
+      "RandomRepair",
+      "SPEA2"
+    ],
+    "n_targets": 6,
+    "friedman": {
+      "stat": 19.22857142857138,
+      "p": 0.007500677535103492
+    },
+    "nemenyi": {
+      "mean_ranks": {
+        "ACMO-Diet": 2.0,
+        "BMOEA": 2.3333333333333335,
+        "Greedy": 5.0,
+        "MA": 2.6666666666666665,
+        "NSGA2": 4.666666666666667,
+        "Random": 7.166666666666667,
+        "RandomRepair": 5.333333333333333,
+        "SPEA2": 6.833333333333333
+      },
+      "critical_difference": 4.286481307552852,
+      "significant_pairs": [
+        {
+          "a": "ACMO-Diet",
+          "b": "Random",
+          "rank_diff": 5.166666666666667,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "SPEA2",
+          "rank_diff": 4.833333333333333,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "BMOEA",
+          "b": "Random",
+          "rank_diff": 4.833333333333334,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "BMOEA",
+          "b": "SPEA2",
+          "rank_diff": 4.5,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "MA",
+          "b": "Random",
+          "rank_diff": 4.5,
+          "cd": 4.286481307552852
+        }
+      ]
+    },
+    "wilcoxon": {
+      "MA__Random": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      }
+    },
+    "mean_ranks": {
+      "ACMO-Diet": 2.0,
+      "BMOEA": 2.3333333333333335,
+      "Greedy": 5.0,
+      "MA": 2.6666666666666665,
+      "NSGA2": 4.666666666666667,
+      "Random": 7.166666666666667,
+      "RandomRepair": 5.333333333333333,
+      "SPEA2": 6.833333333333333
+    }
+  },
+  "1.5": {
+    "algorithms": [
+      "ACMO-Diet",
+      "BMOEA",
+      "Greedy",
+      "MA",
+      "NSGA2",
+      "Random",
+      "RandomRepair",
+      "SPEA2"
+    ],
+    "n_targets": 6,
+    "friedman": {
+      "stat": 6.999999999999871,
+      "p": 0.4288798575530677
+    },
+    "nemenyi": {
+      "mean_ranks": {
+        "ACMO-Diet": 1.1666666666666667,
+        "BMOEA": 2.1666666666666665,
+        "Greedy": 3.1666666666666665,
+        "MA": 3.5,
+        "NSGA2": 5.0,
+        "Random": 6.0,
+        "RandomRepair": 7.0,
+        "SPEA2": 8.0
+      },
+      "critical_difference": 4.286481307552852,
+      "significant_pairs": [
+        {
+          "a": "ACMO-Diet",
+          "b": "Random",
+          "rank_diff": 4.833333333333333,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "RandomRepair",
+          "rank_diff": 5.833333333333333,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "SPEA2",
+          "rank_diff": 6.833333333333333,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "BMOEA",
+          "b": "RandomRepair",
+          "rank_diff": 4.833333333333334,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "BMOEA",
+          "b": "SPEA2",
+          "rank_diff": 5.833333333333334,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "Greedy",
+          "b": "SPEA2",
+          "rank_diff": 4.833333333333334,
+          "cd": 4.286481307552852
+        },
+        {
+          "a": "MA",
+          "b": "SPEA2",
+          "rank_diff": 4.5,
+          "cd": 4.286481307552852
+        }
+      ]
+    },
+    "wilcoxon": {},
+    "mean_ranks": {
+      "ACMO-Diet": 1.1666666666666667,
+      "BMOEA": 2.1666666666666665,
+      "Greedy": 3.1666666666666665,
+      "MA": 3.5,
+      "NSGA2": 5.0,
+      "Random": 6.0,
+      "RandomRepair": 7.0,
+      "SPEA2": 8.0
+    }
+  }
+}

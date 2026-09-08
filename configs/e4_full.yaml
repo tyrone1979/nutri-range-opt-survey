@@ -1,0 +1,8 @@
+experiment: e4_alignment
+result_class: META
+note: "E4 consumes E1-E3 CSVs; no new solver runs"
+input_files:
+  - results/raw/e1_scaling_full.csv
+  - results/raw/e2_sparsity_full.csv
+  - results/raw/e3_dimension_full.csv
+output_dir: results/statistics

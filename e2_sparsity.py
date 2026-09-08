@@ -26,35 +26,28 @@ from e1_scaling import (
 )
 
 
+# 从共享模块导入（含无上界清洗）
+from sparsity_ops import adjust_target_object, empirical_meal_caps
+
+
 # ============================================================
-# E2 特有：约束调整
+# E2 特有：约束调整（兼容旧接口；生产请用 run_e2.py）
 # ============================================================
 
-def adjust_target_sparsity(target: Target, factor: float) -> Target:
+def adjust_target_sparsity(target: Target, factor: float, caps: np.ndarray = None) -> Target:
     """
-    调整 target 的约束松紧度
-    factor=1.0: 原始约束
-    factor=0.5: 收紧50%（更难）
-    factor=1.5: 放松50%（更容易）
+    调整 target 的约束松紧度（先清洗 sentinel 上界，再按中心缩放）。
+    factor=1.0: 清洗后的基准区间
+    factor=0.5: 收紧
+    factor=1.5: 放松
     """
-    center = (target.lower_bounds + target.upper_bounds) / 2.0
-    half_range = (target.upper_bounds - target.lower_bounds) / 2.0 * factor
-
-    new_lower = center - half_range
-    new_upper = center + half_range
-
-    # 确保下界 ≥ 0
-    new_lower = np.maximum(new_lower, 0.0)
-    new_upper = np.maximum(new_upper, new_lower + 1e-6)
-
-    return Target(
-        target_id=target.target_id,
-        lower_bounds=new_lower,
-        upper_bounds=new_upper,
-        nutrient_names=target.nutrient_names,
-        col_idx=target.col_idx,
-        target_array=np.column_stack([new_lower, new_upper])
-    )
+    if caps is None:
+        # Fallback: treat huge uppers as lo + max(lo,1)*10 — weak; prefer passing caps
+        hi = target.upper_bounds.astype(float).copy()
+        lo = target.lower_bounds.astype(float).copy()
+        caps = np.where(hi >= 1e5, np.maximum(lo * 2 + 1, lo + 100.0), hi)
+    adj, _ = adjust_target_object(target, factor, caps)
+    return adj
 
 
 # ============================================================
