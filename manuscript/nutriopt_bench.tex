@@ -1,338 +1,880 @@
-\documentclass[11pt]{article}
-
-\usepackage[margin=1in]{geometry}
-\usepackage{booktabs}
-\usepackage{graphicx}
-\usepackage{hyperref}
-\usepackage{amsmath,amssymb}
-\usepackage{xcolor}
-\usepackage{multirow}
+\documentclass[lettersize,journal]{IEEEtran}
+\usepackage{amsmath,amsfonts,amssymb}
 \usepackage{array}
-\usepackage{setspace}
-\usepackage[numbers,sort&compress]{natbib}
-\usepackage{hyperref}
-
-\hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue}
-\setstretch{1.05}
-
-\title{Difficulty Sensitivity versus Ranking Stability in\\
-Range-Constrained Combinatorial Search:\\
-NutriOpt-Bench for Evolutionary Computation}
-\author{
-NutriOpt-Bench Project\\
-\textit{IEEE TEVC reconstruction --- evidence-driven draft after complete E1--E4 PRIMARY.}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{stfloats}
+\usepackage{url}
+\usepackage{cite}
+\usepackage{balance}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\hyphenation{Nutri-Opt-Bench NHANES multi-objective}
+% IEEEtran sets display skips at class load (shortskip above can be 0pt).
+% Re-apply after \begin{document} and disable shrink so columns cannot crush gaps.
+\newcommand{\NutriOptFixDisplays}{%
+  \raggedbottom
+  \setlength{\abovedisplayskip}{10pt plus 2pt minus 0pt}%
+  \setlength{\belowdisplayskip}{14pt plus 2pt minus 0pt}%
+  \setlength{\abovedisplayshortskip}{10pt plus 2pt minus 0pt}%
+  \setlength{\belowdisplayshortskip}{14pt plus 2pt minus 0pt}%
 }
-\date{\today}
 
 \begin{document}
+\NutriOptFixDisplays
+
+\title{Constrained Binary Subset Selection under Interval Boxes:\\
+A Fair-Budget Benchmark with Application to Food Assembly}
+
+\author{Lei~Zhao$^{1}$,
+Fujin~Huang$^{2}$,
+Xinning~Liu$^{3}$,
+Li~Han$^{3}$,
+Ling~Kang$^{1}$\thanks{Corresponding authors: Ling Kang and Quan Guo.
+E-mails: kangling@neusoft.edu.cn, guoquan@neusoft.edu.cn.},
+and Quan~Guo$^{1}$%
+\thanks{L.~Zhao, L.~Kang, and Q.~Guo are with the Neusoft Research Institution,
+Dalian Neusoft University of Information, Dalian, China.}%
+\thanks{F.~Huang is with the Dalian Scientific Test and Control Technology Institute, Dalian, China.}%
+\thanks{X.~Liu and L.~Han are with the Software Department,
+Dalian Neusoft University of Information, Dalian, China.}%
+\thanks{Manuscript received September 9, 2026.}}
+
+\markboth{IEEE Transactions on Evolutionary Computation}%
+{Zhao \MakeLowercase{\textit{et al.}}: Interval-Box Constrained Binary Subset Selection}
+
 \maketitle
 
 \begin{abstract}
-Constrained combinatorial search often couples large binary decision spaces with coupled interval constraints and potentially sparse feasible regions.
-Range-constrained food assembly (RCFA)---selecting a subset of foods whose nutrient totals fall inside prescribed intervals---is a transparent real-world instance of this regime, yet published diet-planning studies are incommensurate in representation, constraint geometry, and evaluation protocol.
-We present NutriOpt-Bench, a fair-budget evolutionary benchmark that independently varies food-space scale, interval constraint tightness, and nutrient dimensionality under identical evaluation budgets ($100{,}000$ evaluations; population $500$; $10$ seeds).
-Across completed PRIMARY campaigns, interval tightness produced the largest change in feasibility: mean feasible-hit rate (FHR) rose from $0.172$ under tight intervals to $0.962$ under relaxed intervals.
-In contrast, NHANES scaling from $5$K to approximately $210$K candidates maintained mean FHR in the $0.76$--$0.82$ range under the same budget, indicating that nominal decision-space scale alone is not a sufficient predictor of feasibility difficulty here.
-Constraint dimensionality remained near ceiling through nine nutrients and became substantially heterogeneous at sixteen nutrients.
-Despite these changes in absolute difficulty, cross-regime rankings among shared algorithms were highly concordant (Kendall $\tau=0.909$--$0.982$).
-Feasibility-oriented/memetic methods (MA, ACMO-Diet, BMOEA) together with NSGA-II formed a relatively stable leading group, while random search remained consistently weak.
-The central implication for evolutionary computation is a separation between \emph{difficulty sensitivity} and \emph{ranking sensitivity}: harder regimes need not imply wholesale reordering of algorithmic effectiveness.
+This paper presents a benchmark framework for constrained combinatorial optimization under coupled interval-box inequalities, using range-constrained food assembly (RCFA) as a structured application domain in which binary subset decisions must satisfy nutrient interval constraints.
+Published diet-planning and menu-assembly studies remain difficult to compare because representation, constraint geometry, algorithm families, and evaluation budgets are rarely aligned.
+We organize an experimental survey of the evolutionary multiobjective methods that underpin this setting along representation, target geometry, structural constraints, algorithmic paradigm, data resources, and evaluation protocol, then introduce NutriOpt-Bench, a fair-budget benchmark that independently varies food-space scale, interval tightness, and nutrient dimensionality under identical budgets ($100{,}000$ evaluations; population $500$; $10$ seeds).
+Across completed PRIMARY campaigns, interval tightness produced the largest change in feasibility (mean feasible-hit rate from $0.172$ to $0.962$), whereas NHANES scale from $5$K to $\approx$210K did not collapse mean FHR under the same budget, and dimensionality became substantially heterogeneous mainly at sixteen nutrients.
+Despite large absolute difficulty shifts, cross-regime rankings among shared algorithms remained highly concordant (Kendall $\tau=0.909$--$0.982$).
+The survey implication is methodological: diet-optimization claims need shared structural axes; the empirical implication for evolutionary computation is a separation between \emph{difficulty sensitivity} and \emph{ranking sensitivity}.
 \end{abstract}
 
+\begin{IEEEkeywords}
+Range-constrained food assembly, evolutionary multiobjective optimization, constrained binary subset selection, fair-budget benchmarking, feasible hit rate, Kendall tau.
+\end{IEEEkeywords}
+
 \section{Introduction}
-Constrained combinatorial optimization frequently combines binary decisions, coupled constraints, and sparse feasible sets.
-Diet planning provides a concrete instantiation: assemble a meal or daily selection so that aggregate nutrients lie in dietary intervals, optionally with structural coverage (e.g., meals).
-Classical linear programs~\citep{stigler1945,smith1959} and evolutionary menu planners~\citep{gaal2005,seljak2006} address related tasks, while multiobjective evolutionary algorithms (MOEAs)~\citep{deb2002,zhang2007,zitzler2001,cheng2016,li2019ctaea} supply the broader algorithmic repertoire.
-However, existing comparisons rarely share instances, budgets, or metrics, so ``algorithm $A$ beats $B$'' claims do not transfer.
+\label{sec:intro}
+\IEEEPARstart{E}{volutionary} multiobjective optimization (EMO) is routinely applied to constrained combinatorial problems whose decision variables are discrete and whose feasible sets may be sparse~\cite{deb2002,zhang2007}.
+\emph{Range-Constrained Food Assembly} (RCFA) is one such problem: select a binary subset of candidate foods so that aggregate nutrient totals lie inside a \emph{nutrient interval box}, optionally with structural coverage constraints.
+From an evolutionary computation standpoint, RCFA is constrained binary subset selection under coupled interval inequalities.
+Its value for EMO research is methodological---large decision spaces, controllable constraint geometry, and an unambiguous feasibility predicate---rather than any claim about dietary adequacy or clinical outcomes.
+All statements in this paper concern optimization behavior (e.g., Feasible Hit Rate, Friedman tests, and Kendall $\tau$), not nutritional effectiveness.
 
-A deeper issue is conceptual.
-When a problem regime becomes harder, two distinct phenomena may occur:
-(i)~absolute performance deteriorates for many methods (\emph{difficulty sensitivity});
-(ii)~the relative ordering of methods changes (\emph{ranking sensitivity}).
-These need not coincide.
-NutriOpt-Bench is designed to ask:
+Despite this clear search structure, algorithmic evaluation in nutrition-oriented combinatorial optimization has been shaped by three widely shared but weakly tested assumptions.
+First, enlarging the food library is presumed to make search harder, so that small recipe catalogs are treated as convenient proxies for realistic pools.
+Second, increasing the number of nutrient interval constraints is presumed to raise difficulty in a largely uniform manner.
+Third, algorithm rankings obtained on recipe-scale instances are presumed to generalize to large survey-derived catalogs such as NHANES.
+These assumptions are consequential: a substantial line of EMO and related menu-planning studies reports comparisons on comparatively small recipe datasets~\cite{gaal2005,seljak2009,vassanyi2006,zhao2025acmodiet}.
+If the assumptions fail, published orderings may characterize an easy regime rather than the intended combinatorial class.
 
-\begin{quote}
-\emph{How do changes in problem-regime structure affect the absolute difficulty of evolutionary search, and to what extent do they alter the relative effectiveness of different evolutionary mechanisms?}
-\end{quote}
-
-\subsection{Research questions}
-\begin{itemize}
-\item \textbf{RQ1:} How can optimization-based diet planning be characterized by evolutionary-search-relevant structure?
-\item \textbf{RQ2:} How does food-space scale affect feasibility discovery under a fixed evaluation budget?
-\item \textbf{RQ3:} How strongly does interval constraint tightness alter feasible-solution discovery?
-\item \textbf{RQ4:} How does increasing constraint dimensionality affect search?
-\item \textbf{RQ5:} Are relative algorithm rankings stable across regimes?
-\item \textbf{RQ6:} Which algorithmic families perform consistently well in difficult feasibility regimes?
-\end{itemize}
-
-\subsection{Contributions}
+Existing evaluation practice exhibits three corresponding defects.
 \begin{enumerate}
-\item A structured taxonomy of optimization-based diet planning along representation, target geometry, structure, paradigm, and evaluation.
-\item A frozen RCFA formulation and reproducible NutriOpt-Bench separating scale, interval tightness, and dimensionality under matched budgets.
-\item PRIMARY evidence that interval tightness is the strongest tested difficulty axis; NHANES scale does not collapse FHR under $100$k evaluations; dimensionality becomes heterogeneous mainly at $16$ nutrients.
-\item Cross-regime analysis showing high Kendall concordance of rankings despite large absolute FHR shifts---separating difficulty sensitivity from ranking sensitivity.
+\item[(a)] \emph{Missing controllable difficulty axes.}
+Food-library scale, interval sparsity of the nutrient box, and nutrient-constraint dimensionality are rarely varied as independent experimental factors.
+Without an orthogonal design, performance differences cannot be attributed to a specific structural source of hardness.
+\item[(b)] \emph{Confounded failure modes.}
+Zero or near-zero success is often read as evolutionary search failure, yet an instance may simply have an empty feasible set.
+Conflating algorithmic failure with inherent infeasibility biases solver comparisons and obscures what a benchmark is measuring.
+\item[(c)] \emph{Non-portable rankings.}
+Cross-regime ranking concordance is seldom quantified.
+When encodings, budgets, metrics, and instance families differ across papers, ``algorithm $A$ beats $B$'' claims do not transfer~\cite{cheng2016,li2019ctaea,zitzler2001}.
+\end{enumerate}
+A related protocol gap is the scarcity of fair evaluation-budget control and the mixing of heterogeneous success criteria, with insufficient separation between easy recipe regimes and NHANES-style real food pools~\cite{stigler1945,smith1959}.
+
+This paper responds with an \emph{experimental survey} centered on NutriOpt-Bench: a fair-budget benchmark suite for RCFA together with a critical examination of how EMO solvers behave when difficulty is controlled.
+NutriOpt-Bench freezes a common binary RCFA formulation and independently varies three axes under matched resources (population size $500$, $100{,}000$ evaluations, $10$ seeds).
+Campaign~\textbf{E1} scans food-library scale from recipe catalogs through NHANES subsamples to the full pool of approximately $210{,}000$ foods.
+Campaign~\textbf{E2} varies interval sparsity via width factors $\{0.5,1.0,1.5\}$, inducing tight-to-relaxed nutrient interval boxes; this is the primary hardness axis in our design.
+Campaign~\textbf{E3} varies nutrient dimensionality over $\{6,9,12,16\}$ simultaneous interval constraints.
+Campaign~\textbf{E4} performs cross-regime meta-analysis: Friedman ranks within regimes and Kendall $\tau$ across regimes quantify ranking concordance among shared solvers, spanning memetic/feasibility-biased evolutionary algorithms, NSGA-II, indicator-style EAs, reference-vector methods, and greedy/random baselines~\cite{deb2002,zitzler2001,cheng2016,li2019ctaea,zhao2025acmodiet}.
+
+PRIMARY findings can be stated briefly and without crowning a universal champion.
+Interval sparsity is the most salient hardness factor for RCFA under the tested protocol: mean Feasible Hit Rate (FHR) changes sharply across sparsity levels, whereas enlarging the NHANES catalog alone does \emph{not} induce FHR collapse under a fixed $100{,}000$-evaluation budget.
+Nutrient dimensionality remains near a performance ceiling in low-dimensional settings; a pronounced degradation appears mainly for weaker solvers at $16$ constraints.
+Recipe instances form a trivial ceiling regime and must not be used to rank algorithms intended for NHANES-scale pools.
+Among eight shared algorithms, cross-regime Kendall $\tau$ remains high ($\tau=0.909$--$0.982$): absolute difficulty can move substantially while relative tiers stay largely stable, with memetic/feasibility-biased EAs and NSGA-II occupying a leading group and no wholesale rank reversal across hardness regimes.
+Exact calibration on reduced pools further shows that some targets are intrinsically infeasible; reporting conventions must therefore separate empty feasible sets from search failure.
+We do \textbf{not} claim a single best algorithm for all RCFA regimes.
+
+The contributions of this experimental survey are as follows.
+\begin{enumerate}
+\item \textbf{(C1)}~Formulate RCFA as interval-box constrained binary subset selection, and construct NutriOpt-Bench with three orthogonal difficulty axes: food-library scale, interval sparsity, and nutrient-constraint dimensionality.
+\item \textbf{(C2)}~Empirically demonstrate that interval sparsity dominates problem hardness, while food-catalog scale alone does not induce FHR collapse under a fixed evaluation budget; recipe benchmark regimes are trivial and non-generalizable to NHANES-style real food pools.
+\item \textbf{(C3)}~Quantitatively verify strong cross-regime ranking concordance of EMO solvers via Kendall $\tau$: memetic/feasibility-biased evolutionary algorithms and NSGA-II form a stable top-performing family across hardness regimes, without asserting a universal champion.
+\item \textbf{(C4)}~Propose a methodological distinction between algorithm search failure and inherent instance infeasibility for constrained subset-selection benchmarking, with a controlled fair-budget protocol and fully reproducible artifacts.
 \end{enumerate}
 
-\section{Structured Literature Analysis}
-We follow a documented search protocol and seed coding matrix (\texttt{literature/}).
-Landmarks include classical LP diets~\citep{stigler1945,smith1959}, evolutionary menu planning~\citep{gaal2005,seljak2006}, and methodological MOEAs~\citep{deb2002,zhang2007,zitzler2001,cheng2016,li2019ctaea}.
-This is a \emph{structured literature analysis}, not a completed PRISMA systematic review: live database screening counts remain incomplete and are not claimed as finished.
+The remainder of this paper is organized as follows.
+Section~\ref{sec:related} critically reviews related work.
+Section~\ref{sec:formulation} formalizes RCFA and the three orthogonal hardness axes.
+Section~\ref{sec:bench} documents the NutriOpt-Bench fair-budget protocol.
+Section~\ref{sec:results} reports PRIMARY results for E1--E3.
+Section~\ref{sec:e4} presents the E4 cross-regime meta-analysis.
+Section~\ref{sec:discuss} interprets EA mechanisms.
+Section~\ref{sec:guidelines} provides benchmarking guidelines.
+Section~\ref{sec:limit} states limitations and future directions.
+Section~\ref{sec:concl} concludes.
 
-\section{Taxonomy of Optimization-Based Diet Planning}
-We organize prior work on five orthogonal axes (details in \texttt{literature/taxonomy.md}):
-(1)~decision representation;
-(2)~target geometry (point, one-sided, interval);
-(3)~structural constraints;
-(4)~optimization paradigm;
-(5)~evaluation criteria.
-RCFA occupies binary subset selection with interval boxes, optional meal coverage, and feasibility-first metrics.
-These axes motivate NutriOpt-Bench factors: representation $\rightarrow$ binary foods; geometry $\rightarrow$ interval tightness; catalog size $\rightarrow$ scale; simultaneous nutrients $\rightarrow$ dimensionality.
+\section{Related Work}
+\label{sec:related}
 
-\section{Range-Constrained Food Assembly}
-\subsection{Core model}
-Select $x\in\{0,1\}^N$ with nutrient matrix $A\in\mathbb{R}^{N\times m}$:
-\begin{align}
-K_{\min}\le \|x\|_0\le K_{\max},&\qquad
-L_j\le \sum_i A_{ij}x_i\le U_j\quad(j\in J),\\
-\sum_{i\in M_m}x_i\ge 1&\quad\text{(meals, when enabled)}.
-\end{align}
-Hard feasibility ignores soft diversity penalties.
-Native solvers optimize a scalar penalty fitness; pymoo paths use a shared bi-objective decode.
-Both realize the same binary selection semantics (\texttt{docs/RCFA\_FORMULATION.md}).
+\subsection{Constrained multiobjective benchmarks and missing hardness axes}
+Constrained multiobjective optimization algorithms (CMOOAs) are commonly assessed on synthetic suites that emphasize decision-space scale, objective dimensionality, and classical constraint forms~\cite{deb2002,zhang2007,cheng2016,li2019ctaea}.
+These suites have been instrumental for studying dominance ranking, decomposition, indicator archives, and constraint-handling strategies~\cite{zitzler2001}.
+Their experimental grammar is mature for continuous or standardized constrained fronts: one can vary the number of variables, the number of objectives, and the severity of inequality constraints while keeping encodings comparable across solvers.
+However, the hardness controls that dominate those suites remain largely aligned with continuous landscapes and with constraint families that do not resemble coupled interval boxes over binary subset decisions.
+In particular, they rarely expose an independently tunable \emph{interval-sparsity} axis---that is, a controllable tightening of box inequalities that sparsifies the feasible set while holding decision dimension and objective formulation fixed.
+As a result, many CMOOA comparisons cannot decouple orthogonal sources of difficulty: when performance changes, it is often unclear whether the cause is scale, constraint geometry, dimensionality, or an uncontrolled mixture of all three.
 
-\subsection{What RCFA is not}
-Continuous portion LPs, recommender-only systems, and clinical outcome evaluation are out of scope.
-NutriOpt-Bench measures \textbf{optimization behavior}, not dietary adequacy.
+This ambiguity is not cosmetic for combinatorial subset selection.
+RCFA asks an evolutionary algorithm to discover a binary assembly whose aggregate nutrient vector lies inside a prescribed interval box, optionally under cardinality or coverage constraints.
+Feasibility is therefore a conjunction of linear interval inequalities on a discrete support, not a smooth inequality field on a continuous decision vector.
+Benchmarking progress on continuous CMOOA suites does not automatically transfer to this setting: an algorithm that is strong on standard constrained fronts may still fail to enter a sparse nutrient box under a fixed evaluation budget.
+The converse is also true: a feasibility-biased combinatorial searcher that looks unremarkable on continuous constrained fronts may dominate interval-box discovery.
+Treating RCFA as interchangeable with classical constrained MOEA test problems therefore conflates two different experimental questions.
+A more careful position is that RCFA is a complementary probe within evolutionary computation---useful precisely because it couples large binary decision spaces with controllable box geometry---rather than a replacement for existing continuous suites~\cite{deb2002,zhang2007,li2019ctaea}.
 
-\section{NutriOpt-Bench}
-\subsection{Data and targets}
-NHANES food instances ($\sim$210k rows, $16$ nutrients, meal tags) form the primary combinatorial regime.
-Recipe catalogs ($\sim$1.5--1.8k foods, $4$ nutrients, no meals) are easy-regime calibrations and must be analyzed separately.
-Representative targets (cluster-12) show lower mean nearest-neighbor distance than random-12 in a standardized feature proxy ($3.77$ vs.\ $4.54$; descriptive, not a statistical representativeness claim).
+A second structural gap concerns attribution.
+Even when constrained MOEA papers report multiple instance families, they typically change several factors at once: encoding length, constraint count, and feasible-set density may all move together.
+Without an orthogonal design, ``Algorithm~$A$ beats Algorithm~$B$ on hard instances'' remains an aggregate claim rather than a causal one.
+For RCFA, the natural hardness factors are food-library scale, interval-box sparsity, and nutrient-constraint dimensionality.
+If the community cannot vary these factors independently under matched budgets, published rankings cannot tell practitioners which structural property their solver is actually solving.
 
-\subsection{Axes}
-\textbf{E2} interval-width factors $\{0.5,1.0,1.5\}$ (interval-induced feasibility regimes; sanitized one-sided bounds).
-\textbf{E1} food-space scale (recipe + NHANES samples/full).
-\textbf{E3} nutrient dimensions $\{6,9,12,16\}$ via canonical prefix projection.
-\textbf{E4} cross-regime meta-analysis (no new solver runs).
+\subsection{Dietary and food-assembly optimization: two evaluation regimes}
+Optimization-oriented food assembly and menu planning have a long lineage from classical linear programs~\cite{stigler1945,smith1959} to evolutionary and hybrid planners~\cite{gaal2005,seljak2009,vassanyi2006} and, more recently, constrained multiobjective diet recommenders~\cite{zhao2025acmodiet}.
+Across this literature, two evaluation settings dominate.
+The first uses small recipe catalogs: decision spaces of roughly $10^3$ foods, few nutrients, and comparatively dense feasible regions.
+Such instances are convenient for rapid prototyping and frequently yield near-universal success under modest budgets.
+The second setting, closer to realistic combinatorial scale, draws on large survey-derived pools such as NHANES, with candidate sets on the order of $10^4$--$10^5$ foods and richer nutrient vectors~\cite{zhao2026dmp4p}.
+Despite this contrast, community practice often treats the two regimes as interchangeable for algorithm ranking.
 
-\subsection{Fairness}
-PRIMARY: population $500$, $\texttt{max\_evaluations}=100{,}000$, $10$ seeds, early-stop disabled, hashed seeds.
-Residual asymmetries: MA median $\approx 100.8$k and Greedy $\approx 100.2$k evaluations (inner scoring); RandomRepair uses full $100$k after correction.
-We report matched budgets with documented residuals (\texttt{docs/FAIRNESS\_AUDIT.md}).
+Three flawed assumptions recur and are rarely stress-tested under matched resources.
+First, larger food-library scale is presumed to imply harder optimization, so that scaling $N$ is treated as a sufficient stress test.
+Second, rankings obtained on recipe catalogs are presumed to generalize to NHANES-style pools.
+Third, underperformance is routinely interpreted as an algorithmic defect, without checking whether the instance is intrinsically interval-infeasible.
+Each assumption is consequential for how the field accumulates ``evidence.''
+If recipe ceilings are used to crown winners, the resulting ordering is silent about sparse NHANES boxes.
+If scale is manipulated while interval geometry drifts, FHR changes cannot be attributed to catalog size.
+If empty boxes are labeled as search failures, solvers are penalized for properties of the instance rather than of the algorithm.
 
-\subsection{Algorithms}
-MA, ACMO-Diet, BMOEA, NSGA-II~\citep{deb2002}, SPEA2~\citep{zitzler2001}, RVEA~\citep{cheng2016}, C-TAEA~\citep{li2019ctaea}, Random, Greedy, RandomRepair (E3 omits Greedy/Repair).
-MILP/CBC on reduced candidate pools provides feasibility calibration, not large-scale competition.
+The recipe-versus-NHANES split is especially consequential for survey conclusions.
+Recipe catalogs compress both decision-space size and nutrient dimensionality, often producing ceiling FHR for every solver; NHANES pools expand the combinatorial surface while retaining coupled nutrient boxes.
+If a paper reports only the former, its ranking evidence does not speak to the latter.
+Likewise, if a paper changes library size and interval geometry simultaneously, it cannot isolate which factor drove the observed FHR change.
+The literature therefore needs not merely more algorithms, but a harder experimental grammar for comparing them~\cite{gaal2005,seljak2009,zhao2025acmodiet}.
+Classical LP formulations~\cite{stigler1945,smith1959} already made nutrient targets explicit; evolutionary menu planners later added multiobjective and preference structure~\cite{gaal2005,seljak2009,vassanyi2006}.
+What did not co-evolve at the same pace is a shared difficulty protocol that would make those evolutionary comparisons portable across papers and food pools.
 
-\section{Experimental Design}
-Primary metric: feasible-hit rate (FHR).
-Secondary: evaluations to first feasible (FFG\_evals), BestFit, runtime, recorded \texttt{n\_evals}.
-Within each regime, Friedman tests on target-aggregated FHR assess ranking differences.
-Across regimes, mean Friedman ranks and Kendall $\tau$ assess concordance.
-Recipe and NHANES results are never pooled for ranking claims.
+\subsection{Critical limitations of current evaluation practice}
+Beyond instance choice, protocol quality remains uneven.
+Computation budgets are frequently unmatched across solvers; random seeds and repeat counts are inconsistently reported; and success metrics mix feasibility, preference proxies, and secondary objectives without a shared primary predicate.
+Even when multiple instance families are used, papers seldom quantify \emph{rank consistency} across hardness regimes via concordance statistics such as Kendall~$\tau$.
+Most critically, evaluation pipelines almost universally fail to separate \emph{algorithm search failure} from \emph{intrinsic instance infeasibility}.
+Without small-pool exact calibration or an analogous feasibility oracle, zero-success outcomes remain semantically ambiguous and can systematically distort comparative conclusions~\cite{deb2002,li2019ctaea}.
 
-\section{Results}
+Fairness defects compound this ambiguity.
+When one solver receives more evaluations, different seeds, or a softer success definition, apparent superiority may be an artifact of protocol asymmetry rather than search mechanism.
+Cross-paper synthesis then becomes unreliable: two ``state-of-the-art'' claims may be incomparable even when both study food assembly.
+A survey-style critique must therefore prioritize protocol commensurability---matched budgets, shared feasibility predicates, and concordance statistics---over narrative accumulation of algorithm names.
+Related MOEA methodology papers already emphasize that indicator choice, archive design, and constraint handling interact strongly with problem geometry~\cite{zitzler2001,cheng2016,li2019ctaea}.
+RCFA evaluation should inherit that methodological caution rather than treating diet instances as informal demos.
 
-\subsection{Overall feasibility landscape}
-Figure~\ref{fig:concept} summarizes the empirical distinction between absolute difficulty and ranking stability.
-The hardest PRIMARY cell is E2 with $f=0.5$ (mean FHR $0.172$); the easiest NHANES-like cells approach ceiling FHR under relaxed intervals or low dimension.
+\subsection{Research gap}
+In summary, the field lacks a fair-budget RCFA benchmark that independently controls food-library scale, nutrient-interval sparsity, and nutrient-constraint dimensionality, while also quantifying cross-regime ranking concordance and distinguishing empty feasible sets from search failure.
+NutriOpt-Bench is designed to fill this gap: an orthogonal three-axis hardness suite for interval-box constrained binary subset selection, accompanied by PRIMARY fair-budget campaigns and cross-regime meta-verification.
+Complementary data resources such as large meal-plan corpora~\cite{zhao2026dmp4p} further underscore that realistic food pools and targets are available; what has been missing is a controlled hardness protocol that makes EMO comparisons portable.
+We do not claim a universal champion among EMO solvers; we claim a sharper experimental language for evaluating them.
+The following sections formalize that language, measure absolute difficulty and ranking concordance under matched budgets, and extract portable benchmarking rules from the PRIMARY record.
 
-\begin{figure}[t]
+\section{Problem Formulation}
+\label{sec:formulation}
+
+\subsection{RCFA as interval-box constrained binary subset selection}
+Let $\mathcal{F}=\{1,\ldots,N\}$ index a food library and let $A\in\mathbb{R}^{N\times m}$ be a nutrient matrix whose entry $A_{ij}$ is the contribution of food $i$ to nutrient $j$.
+A candidate assembly is encoded by a binary vector $x\in\{0,1\}^N$, where $x_i=1$ if and only if food $i$ is selected.
+Given a nutrient index set $J\subseteq\{1,\ldots,m\}$ and interval bounds $(L_j,U_j)$ for each $j\in J$, the \emph{nutrient interval box} requires\hspace{\fill}
+\begin{equation}
+\textstyle
+L_j \le \sum_{i=1}^{N} A_{ij}x_i \le U_j,\quad \forall j\in J.
+\end{equation}
+Optional cardinality bounds are written as\hspace{\fill}
+\begin{equation}
+K_{\min}\le \|x\|_0\le K_{\max}.
+\end{equation}
+When meal coverage is enabled, we additionally require\hspace{\fill}
+\begin{equation}
+\textstyle
+\sum_{i\in M_t} x_i \ge 1,\quad \forall M_t.
+\label{eq:meal}
+\end{equation}
+To quantify continuous progress toward the box (and later interpret hardness), we define a normalized constraint-violation degree.
+Let $s_j(x)=\sum_{i=1}^{N}A_{ij}x_i$. Then\hspace{\fill}
+\begin{equation}
+\textstyle
+\mathrm{CV}(x)
+=
+\sum_{j\in J}
+\Bigl(
+\tfrac{\max(0,L_j-s_j(x))}{|L_j|+\epsilon}
++
+\tfrac{\max(0,s_j(x)-U_j)}{|U_j|+\epsilon}
+\Bigr),
+\label{eq:cv}
+\end{equation}
+where $\epsilon>0$ is a small stabilizer.
+As defined in~\eqref{eq:cv}, $\mathrm{CV}(x)=0$ if and only if $x$ meets every active nutrient interval; positive values guide feasibility-biased selection and local improvement.
+
+For Axis~2 (interval sparsity), let $(L_j^0,U_j^0)$ denote a reference box and let $R_j$ be the empirical range of nutrient~$j$ in the food library.
+Width factor $f\in\{0.5,1.0,1.5\}$ induces a relative box-volume (interval sparsity) ratio\hspace{\fill}
+\begin{equation}
+\textstyle
+\rho(f)
+=
+\frac{\prod_{j\in J}\bigl(f\cdot(U_j^0-L_j^0)\bigr)}{\prod_{j\in J} R_j},
+\label{eq:rho}
+\end{equation}
+so that decreasing $f$ contracts the feasible orthotope relative to the library range and sparsifies the feasible set under a fixed $N$.
+
+\vspace{6pt}
+\noindent
+An assembly is \emph{feasible} if and only if all active hard constraints are satisfied.
+Soft penalties (e.g., diversity surrogates) may guide search but do not redefine hard feasibility.
+Thus RCFA is a constrained combinatorial subset-selection problem: binary decisions, coupled linear interval inequalities, and a potentially sparse feasible region.
+
+From an evolutionary-computation perspective, two properties make this formulation experimentally useful.
+First, the feasibility predicate is unambiguous: either the aggregate nutrient vector lies inside the box (and any structural constraints hold), or it does not.
+Second, hardness can be manipulated without changing the encoding class.
+Tightening intervals sparsifies the feasible set; enlarging $N$ expands the combinatorial surface; increasing $|J|$ adds simultaneous box faces.
+These manipulations preserve binary subset selection while exposing distinct geometric regimes.
+We emphasize that the formulation is an optimization abstraction: FHR and related diagnostics speak to search reliability under budgets, not to dietary adequacy or clinical outcomes.
+Cardinality and meal-coverage constraints, when enabled, remain secondary in PRIMARY relative to the nutrient interval box.
+
+\subsection{Feasible Hit Rate}
+Let $\mathcal{R}$ denote a set of independent runs of an algorithm on a fixed instance (target, library, and constraint setting).
+The primary metric is Feasible Hit Rate\hspace{\fill}
+\begin{equation}
+\textstyle
+\mathrm{FHR}
+=
+|\mathcal{R}|^{-1}
+\sum_{r\in\mathcal{R}}
+z_r\,.
+\label{eq:fhr}
+\end{equation}
+
+\vspace{6pt}
+\noindent
+where $z_r\in\{0,1\}$ and $z_r=1$ if and only if run $r$ returns at least one feasible assembly within the evaluation budget.
+FHR measures the probability of discovering feasibility under a fixed search budget.
+It is an optimization metric, not a dietary-quality score: high FHR indicates reliable feasible-region discovery, not nutritional effectiveness.
+Secondary diagnostics (evaluations to first feasible, recorded evaluation counts, and fitness surrogates) are reported only to interpret search behavior.
+
+FHR is deliberately coarse relative to continuous MOEA indicators such as hypervolume or inverted generational distance~\cite{zitzler2001}.
+That coarseness is intentional for RCFA PRIMARY reporting.
+When the central scientific question is whether solvers can enter a sparse interval box at all, a binary success predicate is more commensurable across algorithm families than secondary preference proxies that differ by paper.
+Once feasibility discovery is established, richer multiobjective quality metrics can be layered on; they should not replace the feasibility predicate when comparing solvers whose primary failure mode is remaining outside the box.
+Reporting FHR also clarifies the semantic status of zero success: a run contributes zero only if no feasible assembly is returned within budget, which may reflect either search failure or an empty feasible set---a distinction formalized later via reduced-pool calibration.
+
+\subsection{Three orthogonal hardness axes}
+NutriOpt-Bench isolates three axes that are varied one-at-a-time under matched budgets.
+Orthogonality is the methodological core of the design: each campaign freezes two axes while sweeping the third, so that observed FHR changes can be attributed to a named structural factor rather than to an opaque instance mixture.
+
+\paragraph{Axis 1 (E1): food-pool scale.}
+Decision-space size $N$ ranges from recipe catalogs ($\sim$1.5K--1.8K foods) to NHANES samples $\{5\mathrm{K},10\mathrm{K},25\mathrm{K},50\mathrm{K},100\mathrm{K}\}$ and the full NHANES pool ($\approx 210\mathrm{K}$).
+This axis asks whether nominal catalog growth, by itself, collapses FHR under a fixed evaluation budget.
+If the first flawed assumption were correct, mean FHR would degrade sharply as $N$ grows from $5\mathrm{K}$ toward full NHANES under identical evaluation ceilings.
+E1 tests that prediction directly and also retains recipe catalogs as ceiling diagnostics rather than as ranking arenas.
+
+\paragraph{Axis 2 (E2): nutrient-interval sparsity.}
+Interval widths are scaled by factors $f\in\{0.5,1.0,1.5\}$ around representative targets (with sanitized one-sided bounds), inducing tight, nominal, and relaxed nutrient interval boxes on a fixed NHANES-10K library.
+The induced relative volume $\rho(f)$ in~\eqref{eq:rho} formalizes this geometric contraction.
+This axis controls feasible-region sparsity through constraint geometry rather than through $N$.
+Holding the library fixed isolates box tightness as a geometric hardness factor and asks whether FHR responds more strongly to sparsity than to catalog growth.
+Because width factors act on the same target family, E2 is the cleanest probe of interval-box difficulty in the suite.
+
+\paragraph{Axis 3 (E3): nutrient-constraint dimensionality.}
+The number of simultaneous interval constraints is set to $|J|\in\{6,9,12,16\}$ via a canonical nutrient prefix on NHANES-10K.
+This axis asks whether higher-dimensional boxes degrade feasibility discovery uniformly or selectively.
+Uniform degradation would support a simple ``more constraints are always harder'' narrative; selective degradation would instead implicate mechanism--constraint interactions.
+The prefix construction is disclosed so that dimensionality claims remain tied to a reproducible nutrient ordering rather than to an unspecified subset of nutrients.
+
+\subsection{Why classical MOEA benchmarks under-represent RCFA hardness}
+Standard continuous constrained MOEA suites emphasize objective-space geometry and generic inequality constraints, not binary subset selection over large catalogs with coupled nutrient interval boxes~\cite{deb2002,zhang2007,cheng2016}.
+They therefore do not jointly expose (i)~combinatorial subset structure, (ii)~tunable interval sparsity, and (iii)~realistic library scale.
+RCFA's uniqueness for evolutionary computation is precisely this combination: a real-world-structured constrained binary subset-selection regime in which hardness can be attributed to orthogonal geometric and dimensional factors rather than to an opaque instance mixture.
+Decomposition and reference-vector methods~\cite{cheng2016}, constrained archives~\cite{li2019ctaea}, and classical dominance search~\cite{deb2002} all remain relevant candidate mechanisms; what the formulation supplies is a controlled arena in which their feasibility-discovery behavior can be compared under matched budgets.
+In short, RCFA complements continuous constrained suites as a missing combinatorial probe with an explicit hardness grammar.
+
+\begin{algorithm*}[!t]
+\caption{Feasibility-biased memetic EA template covering MA, ACMO-Diet, and BMOEA under the NutriOpt-Bench decode.}
+\label{alg:memetic}
+\begin{algorithmic}[1]
+\Require Food library $\mathcal{F}$, nutrient matrix $A$, interval box $\{(L_j,U_j)\}_{j\in J}$, population size $P$, budget $E_{\max}$
+\Ensure Best feasible assembly $x^\star$ (if any) and residual $\mathrm{CV}$ archive
+\State Initialize population $\mathcal{P}\leftarrow\{x^{(1)},\ldots,x^{(P)}\}$ with cardinality-feasible binary vectors
+\State Evaluate $\mathrm{CV}(x)$ via~\eqref{eq:cv} and soft fitness surrogates for all $x\in\mathcal{P}$
+\While{evaluation count $< E_{\max}$}
+  \State Select parents with feasibility bias (prefer $\mathrm{CV}=0$; otherwise smaller $\mathrm{CV}$)
+  \State Apply set/binary crossover and add/delete/replace mutation to form offspring $\mathcal{O}$
+  \ForAll{$y\in\mathcal{O}$}
+    \State \textbf{Local search (MA/ACMO):} greedy add/swap moves that reduce $\mathrm{CV}(y)$ within a capped inner budget
+    \State \textbf{Optional repair (ACMO/BMOEA variants):} delete upper violators / insert deficit-reducing foods
+  \EndFor
+  \State Merge $\mathcal{P}\cup\mathcal{O}$, retain elite feasibles, fill remainder by $\mathrm{CV}$-ranked infeasibles
+  \State Update $x^\star$ if a new feasible (or lower-$\mathrm{CV}$) assembly is found
+\EndWhile
+\State \Return $x^\star$ and run diagnostics (FHR bit, FFG, terminal $\mathrm{CV}$)
+\end{algorithmic}
+\end{algorithm*}
+
+\section{Experimental Protocol}
+\label{sec:bench}
+
+\subsection{Fair-budget PRIMARY setup}
+Unless stated otherwise, every PRIMARY run uses population size $500$, $\texttt{max\_evaluations}=100{,}000$, early stopping disabled, and $10$ hashed seeds.
+All solvers operate on the same RCFA decode and feasibility predicate.
+We disclose residual budget asymmetries rather than hiding them: MA local improvement and Greedy candidate scoring produce median evaluation counts of approximately $100.8\mathrm{k}$ and $100.2\mathrm{k}$, respectively; after correcting an earlier under-budget bug, RandomRepair consumes the full $100\mathrm{k}$ budget on PRIMARY E1/E2.
+These residuals are documented in the fairness audit and are not used to claim exact micro-equality of wall-clock time.
+The design priority is evaluation-count fairness with transparent residuals, not the fiction of identical wall-clock traces across heterogeneous implementations.
+
+Matched seeds and matched evaluation ceilings are prerequisites for portable ranking claims.
+Without them, apparent superiority can arise from longer search, luckier seeds, or softer stopping rules.
+NutriOpt-Bench therefore freezes the budget cell before comparing mechanisms and archives residual deviations so that later readers can re-weight interpretations if needed.
+Table~\ref{tab:axes} summarizes the three orthogonal axes and PRIMARY density diagnostics.
+Recipe regimes are retained as diagnostic ceiling checks but are excluded from ranking aggregates precisely because ceiling FHR cannot discriminate solvers.
+Disabling early stopping further prevents solvers from appearing stronger merely because they terminate after a lucky early hit while consuming fewer evaluations on average; the PRIMARY question is success within a common ceiling, not opportunistic early exit.
+
+\begin{table}[!t]
 \centering
-\includegraphics[width=\textwidth]{../results/figures/fig_tevc_difficulty_vs_ranking.png}
+\caption{NutriOpt-Bench orthogonal axes and PRIMARY instance characteristics.}
+\label{tab:axes}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}p{0.8cm}p{3.5cm}p{2.5cm}@{}}
+\toprule
+Axis & Controlled levels & Feas.\ dens.\ est. \\
+\midrule
+E1 & NHANES $N$: 5K--$\approx$210K (+ recipes) & matched box (not swept) \\
+E2 & $f\in\{0.5,1.0,1.5\}$; $\rho(f)$ in~\eqref{eq:rho} & $\approx0$ / $0$ / $5.8{\times}10^{-4}$ \\
+E3 & $|J|\in\{6,9,12,16\}$ on NHANES-10K & selective drop at dim.\ 16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Algorithm suite}
+Ten algorithms span five mechanism families:
+\begin{itemize}
+\item \textbf{Memetic / feasibility-biased EAs:} MA, ACMO-Diet~\cite{zhao2025acmodiet}, BMOEA;
+\item \textbf{Dominance-based MOEA:} NSGA-II~\cite{deb2002};
+\item \textbf{Indicator / archive MOEA:} SPEA2~\cite{zitzler2001};
+\item \textbf{Reference / constrained MOEAs:} RVEA~\cite{cheng2016}, C-TAEA~\cite{li2019ctaea};
+\item \textbf{Heuristics and baselines:} Greedy, RandomRepair, Random.
+\end{itemize}
+E3 omits Greedy and RandomRepair.
+MILP/CBC on reduced candidate pools is used only for feasibility calibration, not as a large-scale competitor.
+Recipe regimes are treated as trivial ceiling cases and are excluded from ranking claims and from NHANES-based E4 aggregation.
+
+The suite is intentionally plural rather than exhaustive.
+Memetic and feasibility-biased methods represent intensified pressure toward feasible assemblies (Alg.~\ref{alg:memetic}); NSGA-II represents classical dominance search; SPEA2 represents indicator/archive guidance; RVEA and C-TAEA represent reference-vector and constrained two-archive designs; greedy and random methods demarcate constructive and unstructured floors~\cite{zhao2025acmodiet,deb2002,zitzler2001,cheng2016,li2019ctaea}.
+Table~\ref{tab:params} lists crossover/mutation settings and local-search notes used in the PRIMARY instantiation.
+Including weak baselines is methodologically necessary: without them, high FHR in easy cells cannot be distinguished from genuine constrained-search competence.
+Omitting Greedy and RandomRepair from E3 is a campaign-scope choice rather than a claim that those methods are irrelevant; concordance analyses in E4 accordingly restrict to shared solvers where necessary.
+
+\begin{table}[!t]
+\centering
+\caption{PRIMARY solver operators and key parameters (binary/RCFA instantiation).}
+\label{tab:params}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}l@{\,}c@{\,}c@{\,}c@{}}
+\toprule
+Algorithm & Crossover & Mutation & Local / notes \\
+\midrule
+MA & set $p_c{=}0.2$ & add/del $p_m{=}0.9$ & CV LS (Alg.~\ref{alg:memetic}) \\
+ACMO-Diet~\cite{zhao2025acmodiet} & constr.\ MO & feas.-biased & repair + memetic \\
+BMOEA & set union $0.2$ & add/del $0.9$ & feas.-first rebuild \\
+NSGA-II~\cite{deb2002} & SBX $0.9$, $\eta_c{=}15$ & PM $1$, $\eta_m{=}20$ & RoundingRepair \\
+SPEA2~\cite{zitzler2001} & SBX $0.9$/$\eta_c{=}15$ & PM $1$/$\eta_m{=}20$ & ext.\ archive \\
+RVEA~\cite{cheng2016} & SBX $0.9$/$\eta_c{=}15$ & PM $1$/$\eta_m{=}20$ & ref-vector select \\
+C-TAEA~\cite{li2019ctaea} & SBX $0.9$/$\eta_c{=}15$ & PM $1$/$\eta_m{=}20$ & CA/DA (pymoo) \\
+Greedy & --- & --- & constructive fill \\
+RandomRepair & --- & --- & delete/add $\le$20 \\
+Random & --- & --- & unstructured \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Campaign overview}
+\textbf{E1} varies food-pool scale (recipes + NHANES 5K--full).
+\textbf{E2} varies interval sparsity $f\in\{0.5,1.0,1.5\}$ on NHANES-10K.
+\textbf{E3} varies nutrient dimensionality $\{6,9,12,16\}$ on NHANES-10K.
+\textbf{E4} reuses PRIMARY outputs for cross-regime meta-analysis (no new solver runs).
+Each of E1--E3 is therefore a one-factor hardness sweep under a frozen budget cell; E4 asks whether absolute FHR shifts imply ranking reversals among shared solvers.
+This separation is deliberate: difficulty sensitivity and ranking sensitivity are different scientific claims and must not be conflated in a single narrative figure without concordance statistics.
+Holding NHANES-10K fixed in E2 and E3 further prevents scale from contaminating sparsity and dimensionality contrasts, while E1's scale sweep uses a fixed interval construction so that catalog growth is not confounded with changing box geometry.
+
+\subsection{Statistical pipeline}
+Within each regime, Friedman tests on target-aggregated FHR assess whether algorithm ranks differ beyond chance.
+Across regimes, mean Friedman ranks and Kendall~$\tau$ quantify concordance of relative orderings.
+We report $p$-values with the understanding that they support rank differences and concordance, not clinical or dietary conclusions.
+Recipe and NHANES results are never pooled for ranking.
+Target aggregation precedes ranking so that a single easy or hard target does not dominate algorithm comparisons within a cell.
+Where solvers are missing from a campaign (E3 omissions), concordance analyses restrict to the shared algorithm subset so that $\tau$ remains well-defined.
+Mean Friedman ranks are subsequently averaged across non-missing cells to summarize tiers, but those averages are interpreted descriptively alongside pairwise $\tau$ rather than as a substitute for concordance testing.
+
+\subsection{Reproducibility}
+All PRIMARY raw CSVs, summary tables, figures, runners, and analysis scripts are released in the project repository.
+Environment fingerprints and fairness residuals are archived with the experimental freezes.
+The benchmark is intended to be re-executable under the stated budgets.
+Reproducibility here means more than code availability: it means that a later study can regenerate the same hardness axes, the same budget cell, and the same feasibility predicate, then ask whether a new solver changes FHR or Kendall concordance under that fixed experimental grammar.
+Fairness residuals for MA and Greedy are part of that grammar; hiding them would make PRIMARY look cleaner than the implementation record warrants.
+Beyond reproducibility of CSVs, the protocol also freezes the semantic meaning of a run: identical decode, identical hard feasibility predicate, and identical seed hashing across solvers.
+That freeze is what makes Friedman ranks and Kendall~$\tau$ interpretable as statements about mechanisms rather than about accidental differences in instance packaging.
+Where implementation families differ (native memetic paths versus pymoo-mediated constrained MOEAs), the protocol records the mediation path instead of pretending that every solver shares a bitwise-identical stack.
+Readers can therefore treat PRIMARY as a fair-budget comparison under disclosed engineering asymmetries, which is the strongest claim the experimental record supports.
+The protocol also fixes population size at $500$ across solvers so that apparent gains cannot be attributed to unequal population capacity under the same evaluation ceiling.
+Ten hashed seeds provide a minimal but consistent replication floor for FHR estimation; larger seed panels would tighten confidence intervals but would not change the fair-budget logic.
+Taken together, these choices define NutriOpt-Bench less as a collection of scripts and more as a portable experimental contract for RCFA comparisons.
+
+\section{Experimental Results (E1--E3)}
+\label{sec:results}
+\label{sec:e1}
+\label{sec:e2}
+\label{sec:e3}
+
+Figure~\ref{fig:concept} summarizes the study-level contrast between absolute difficulty sensitivity and ranking stability.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../results/figures/fig_tevc_difficulty_vs_ranking.png}
 \caption{Conceptual summary of NutriOpt-Bench PRIMARY findings:
 (a)~absolute feasibility difficulty is strongly regime-dependent;
 (b)~relative algorithm ranks remain highly concordant (Kendall $\tau\approx 0.91$--$0.98$).}
 \label{fig:concept}
 \end{figure}
 
-\subsection{Constraint tightness as the primary difficulty axis (E2)}
-On NHANES-10K, mean FHR increased from $0.172$ ($f=0.5$) to $0.761$ ($f=1.0$) to $0.962$ ($f=1.5$) (Fig.~\ref{fig:e2}).
-Friedman tests reject equal algorithm performance at all three factors ($p=1.8\times10^{-3}$, $1.1\times10^{-9}$, $6.6\times10^{-3}$).
-At tight intervals, even $100$k evaluations yield low hit rates; MA ($0.275$) and RandomRepair ($0.242$) lead, while Random is near zero ($0.017$).
-At $f=1.5$, several structured methods reach FHR $=1.0$.
-We interpret $f$ as inducing distinct \emph{interval-induced feasibility regimes}, not as a directly measured geometric density unless density probes are cited separately.
+\subsection{E1: Food-pool scale does not collapse FHR}
+On recipe catalogs, every algorithm attains mean $\mathrm{FHR}=1.000$.
+This verifies a trivial easy regime: with few nutrients and a small library, feasible discovery is not discriminative under $100\mathrm{k}$ evaluations.
+Recipe results are therefore excluded from algorithm ranking.
+Their scientific role is negative but important: they show what an evaluation protocol looks like when the feasible set is too easy to expose mechanism differences.
+Any ranking claim grounded only in that ceiling cell is non-informative for NHANES-scale RCFA.
 
-\begin{figure}[t]
+On NHANES pools, mean FHR across algorithms remains approximately $0.76$--$0.82$ from $5\mathrm{K}$ to full ($\approx 210\mathrm{K}$) under the same budget (Fig.~\ref{fig:e1}).
+We do not observe an FHR collapse induced by catalog growth alone, nor do we claim monotonic degradation with $N$.
+Friedman tests remain significant at every NHANES scale ($p\sim 10^{-9}$--$10^{-10}$), indicating stable algorithm gaps.
+The leading group (MA, ACMO-Diet, NSGA-II, BMOEA) consistently outperforms Random and other weak baselines.
+Thus E1 corrects the first flawed assumption: under fixed evaluation resources, scale is a weaker predictor of feasibility discovery than commonly presumed.
+
+The practical reading is not that $N$ is irrelevant, but that $N$ alone is an insufficient hardness proxy under a $100\mathrm{k}$ evaluation ceiling.
+A larger catalog expands the combinatorial surface, yet the same budget still yields mid-to-high mean FHR across NHANES scales in this suite.
+That finding undermines the convenient practice of treating recipe-scale catalogs as stressed proxies for realistic pools: the recipe cell is a ceiling, whereas NHANES cells remain discriminative without collapsing.
+Within NHANES, algorithm gaps remain statistically detectable even as mean FHR stays in a narrow band, which implies that scale changes do not erase relative competence even when they fail to induce absolute collapse.
+E1 therefore motivates shifting experimental attention from ``ever larger $N$'' toward controllable constraint geometry, while still retaining large pools as ecological realism rather than as the sole hardness dial.
+A complementary reading of the Friedman significance pattern is that algorithm identity remains informative at every NHANES scale even though mean FHR does not track $N$ strongly.
+In other words, E1 separates two notions that are often conflated: ecological realism of the food pool, and hardness of feasibility discovery under a fixed budget.
+NHANES-scale pools are necessary for realism, but they are not, by themselves, a sufficient stress test once evaluation resources are matched.
+This distinction matters for survey practice: papers that enlarge catalogs without matching budgets or controlling interval geometry may attribute gains to algorithmic progress when the comparison cell has simply become easier or unequally resourced.
+
+\begin{figure}[!t]
 \centering
-\includegraphics[width=0.85\textwidth]{../results/figures/fig_e2_full_fhr_sparsity.png}
-\caption{E2 PRIMARY: mean FHR versus interval-width factor (NHANES-10K; $100$k evaluations; $10$ seeds).}
-\label{fig:e2}
-\end{figure}
-
-\subsection{Search-space scaling (E1)}
-Recipe catalogs yield FHR $=1.000$ for every algorithm---a ceiling regime that must not support superiority claims.
-On NHANES, mean FHR across algorithms remains approximately $0.76$--$0.82$ from $5$K to full ($\approx 210$K) under the fixed $100$k budget (Fig.~\ref{fig:e1}).
-We do \textbf{not} claim monotonic FHR decrease with $N$.
-Within the tested range, increasing catalog size did not produce an FHR collapse; algorithm gaps remain large and Friedman-significant at every scale ($p\sim 10^{-9}$--$10^{-10}$).
-Scale still affects wall-clock cost and per-evaluation work; it is simply a weaker predictor of FHR than interval tightness here.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.85\textwidth]{../results/figures/fig_e1_full_fhr_scale.png}
+\includegraphics[width=\columnwidth]{../results/figures/fig_e1_full_fhr_scale.png}
 \caption{E1 PRIMARY: mean FHR versus NHANES food-space scale ($100$k evaluations; $10$ seeds).}
 \label{fig:e1}
 \end{figure}
 
-\subsection{Constraint dimensionality (E3)}
-Mean FHR is near ceiling at $6$ and $9$ nutrients ($0.992$, $0.983$), dips modestly at $12$ ($0.946$), and becomes substantially heterogeneous at $16$ ($0.795$) (Fig.~\ref{fig:e3}).
-Friedman is non-significant at dim~$6$ (ceiling) and significant at $9$/$12$/$16$ (strongest at $16$, $p\approx 10^{-8}$).
-At dim~$16$, MA/ACMO/BMOEA/NSGA2 remain strong; Random ($0.300$), C-TAEA ($0.592$), and RVEA ($0.733$) degrade.
-We describe a \emph{threshold-like practical effect} in the tested setting, not a mathematically established phase transition.
-\textbf{Construction note:} nutrients absent from a representative target are completed with $[0,\mathrm{empirical\_cap}]$ before prefix projection; this design choice is necessary for uniform dimensionality but is not a purely natural dietary formulation.
+\subsection{E2: Interval sparsity is the dominant hardness axis}
+E2 yields the sharpest absolute FHR response (Fig.~\ref{fig:e2}).
+Reconstructed best-$\mathrm{CV}$ trajectories further illustrate faster residual reduction under relaxed boxes than under $f=0.5$ (Fig.~\ref{fig:conv}).
+Mean FHR rises from $0.172$ at $f=0.5$ to $0.761$ at $f=1.0$ and $0.962$ at $f=1.5$.
+Friedman tests reject equal algorithm performance at all three factors ($p=1.8\times10^{-3}$, $1.1\times10^{-9}$, $6.6\times10^{-3}$).
+Under tight intervals, even $100\mathrm{k}$ evaluations leave most solvers with low hit rates: MA ($0.275$) and RandomRepair ($0.242$) lead, while Random is near zero ($0.017$).
+Under relaxed intervals, several structured methods reach $\mathrm{FHR}=1.0$.
+These results identify nutrient-interval sparsity---not catalog size---as the primary bottleneck of RCFA feasibility discovery in the tested design.
+Relative to earlier LITE settings, PRIMARY restores full-budget RandomRepair and matched evaluation ceilings, so the sparsity ranking is not an artifact of under-budget repair.
 
-\begin{figure}[t]
+The magnitude of the E2 shift is decisive for survey interpretation.
+Moving from $f=0.5$ to $f=1.5$ changes mean FHR by nearly an order of magnitude in absolute terms ($0.172$ to $0.962$), whereas E1's NHANES sweep remains within a comparatively narrow band ($\approx 0.76$--$0.82$).
+Under matched budgets and a fixed library, constraint geometry therefore dominates nominal scale as a feasibility-discovery stressor.
+This does not crown a universal champion under tight boxes; it identifies which experimental axis moves absolute difficulty most strongly.
+It also clarifies why unmatched interval constructions across papers can make ``wins'' incomparable: two studies may appear to disagree about algorithm strength when they are in fact sampling different sparsity regimes.
+The within-factor Friedman significance further shows that even in the hardest sparsity cell, relative algorithm differences remain detectable rather than being washed out into uniform failure---a prerequisite for later concordance analysis.
+The tight-factor cell also clarifies the role of baselines: Random near $0.017$ shows that unstructured sampling almost never enters the sparse box, while RandomRepair's $0.242$ shows that explicit repair recovers nontrivial mass without matching the leading memetic pressure of MA at $0.275$.
+Relaxed factors, by contrast, push several structured methods to perfect hit rates and thereby become weaker ranking arenas, analogous in spirit to recipe ceilings.
+PRIMARY therefore treats $f=0.5$ as the decisive absolute-difficulty cell and treats $f=1.5$ mainly as an upper-bound check that the same solvers can saturate when the box opens.
+This graded reading---hard cell for discrimination, relaxed cell for saturation---is more informative than reporting a single pooled sparsity mean.
+
+\begin{figure}[!t]
 \centering
-\includegraphics[width=0.85\textwidth]{../results/figures/fig_e3_full_fhr_dim.png}
+\includegraphics[width=\columnwidth]{../results/figures/fig_e2_full_fhr_sparsity.png}
+\caption{E2 PRIMARY: mean FHR versus interval-width factor (NHANES-10K; $100$k evaluations; $10$ seeds).}
+\label{fig:e2}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.95\textwidth]{../results/figures/convergence_sparsity.pdf}
+\caption{Reconstructed best-$\mathrm{CV}$ dynamics for E2 ($f=0.5$ vs.\ $f=1.5$) using PRIMARY FFG and terminal $\mathrm{CV}$ diagnostics~\eqref{eq:cv} (dense generation logs are not archived for all PRIMARY runs).}
+\label{fig:conv}
+\end{figure*}
+
+\subsection{E3: High-dimensional selective degradation}
+Mean FHR is near ceiling at $6$ and $9$ nutrients ($0.992$, $0.983$), dips modestly at $12$ ($0.946$), and becomes substantially heterogeneous at $16$ ($0.795$) (Fig.~\ref{fig:e3}).
+Per-seed FHR spreads at dimension~$16$ confirm that leading solvers are not only higher in mean but more stable across seeds (Fig.~\ref{fig:box16}).
+Friedman is non-significant at dimension~$6$ (ceiling) and significant at $9$/$12$/$16$ (strongest at $16$, $p\approx 10^{-8}$).
+At dimension~$16$, MA/ACMO/BMOEA/NSGA-II remain comparatively strong, whereas Random ($0.300$), C-TAEA ($0.592$), and RVEA ($0.733$) degrade.
+We therefore reject uniform ``more constraints are always harder for everyone'' in favor of \emph{selective} high-dimensional degradation of weaker mechanisms.
+We describe a threshold-like practical effect under the tested prefix construction, not a mathematically established phase transition.
+Nutrients absent from a representative target are completed with $[0,\mathrm{empirical\_cap}]$ before prefix projection; this design choice is disclosed as a limitation.
+
+E3's pattern complements E2 rather than duplicating it.
+Sparsity in E2 sparsifies a fixed-dimensional box; dimensionality in E3 adds faces to the box under a prefix construction.
+Low-dimensional cells sit near ceiling and are therefore weak ranking arenas, similar in spirit to recipe ceilings.
+The informative cell is primarily dimension~$16$, where mechanism differences become visible without implying that every solver collapses uniformly.
+Reporting only mean FHR across all dimensions would hide that selectivity; reporting only dimension~$6$ would recreate a trivial ceiling.
+PRIMARY therefore retains the full sweep and interprets degradation as selective rather than universal.
+The non-significance at dimension~$6$ is itself informative: it marks a regime in which FHR cannot support algorithm ranking, reinforcing the broader guideline that ceiling cells must be excluded from competitive claims.
+At dimension~$16$, the selective pattern is especially clear in the weaker band: Random at $0.300$ remains a floor, while C-TAEA at $0.592$ and RVEA at $0.733$ occupy intermediate positions below the memetic/dominance leaders.
+Those numbers should not be over-read as a permanent indictment of reference-vector ideas; they are PRIMARY observations under the frozen decode and budget cell.
+They do, however, refute the uniform-hardness slogan that adding nutrient faces always degrades every solver similarly.
+For benchmarking, the actionable implication is to retain low-dimensional cells as ceiling diagnostics and to treat high-dimensional cells as the ranking-relevant end of the sweep.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../results/figures/fig_e3_full_fhr_dim.png}
 \caption{E3 PRIMARY: mean FHR versus nutrient dimension (NHANES-10K; $100$k evaluations; $10$ seeds).}
 \label{fig:e3}
 \end{figure}
 
-\subsection{Cross-regime ranking stability (E4)}
-E4 aggregates E1 NHANES, E2, and E3 without new runs.
-Cross-regime mean Friedman ranks (Table~\ref{tab:ranks}; Fig.~\ref{fig:e4ranks}) place MA ($3.94$), ACMO-Diet ($4.07$), NSGA2 ($4.14$), and BMOEA ($4.34$) as a leading group; Random is last ($7.13$).
-Among eight shared algorithms, Kendall concordance is high and significant:
-E1--E2 $\tau=0.982$ ($p=7.6\times10^{-4}$),
-E1--E3 $\tau=0.929$ ($p=4.0\times10^{-4}$),
-E2--E3 $\tau=0.909$ ($p=1.8\times10^{-3}$).
-Thus absolute difficulty changes substantially, while relative ordering remains comparatively robust.
-We do \textbf{not} claim wholesale rank reversal across regimes.
-
-\begin{table}[t]
+\begin{figure}[!t]
 \centering
-\caption{Cross-regime mean Friedman ranks (1 $=$ best). Overall averages non-missing cells.}
+\includegraphics[width=\columnwidth]{../results/figures/fhr_distribution_dim16.pdf}
+\caption{E3 dimension~$16$: per-seed FHR distributions (diamond $=$ mean across $10$ seeds).}
+\label{fig:box16}
+\end{figure}
+
+\subsection{Paradigm corrections from E1--E3}
+Three corrections follow directly from the PRIMARY evidence.
+(1)~Food-pool scale alone is not the critical hardness driver under a fixed $100\mathrm{k}$ budget.
+(2)~Interval sparsity dominates absolute feasibility difficulty.
+(3)~High nutrient dimensionality induces selective, not universal, degradation, with low-dimensional regimes near ceiling.
+No universal champion is declared from these campaigns.
+Taken together, E1--E3 replace a folklore hardness narrative---``bigger catalogs and more nutrients make everything harder for everyone''---with an experimentally grounded one: absolute FHR is most sensitive to interval sparsity, scale under matched budgets does not induce collapse, and dimensionality exposes weaker mechanisms mainly at the high end of the tested prefix.
+These corrections are optimization statements about feasibility discovery under the NutriOpt-Bench protocol; they are not claims about nutritional effectiveness.
+They also prepare the meta-analytic question of E4: if absolute difficulty moves so differently across axes, do relative algorithm tiers move with it, or do they remain largely stable?
+Absent that meta-analysis, E1--E3 could still be misread as three disconnected leaderboards.
+With it, the campaigns become evidence for a stronger claim: absolute feasibility difficulty is regime-dependent, yet mechanism tiers need not reverse when the regime changes.
+That claim is empirical and suite-specific; it is offered as a PRIMARY finding under matched budgets, not as a timeless law of evolutionary computation.
+Sections~\ref{sec:e1}--\ref{sec:e3} therefore stand as orthogonal hardness evidence; Section~\ref{sec:e4} converts that evidence into a concordance claim.
+
+\section{Cross-Regime Meta-Analysis (E4)}
+\label{sec:e4}
+E4 aggregates E1 NHANES, E2, and E3 without new solver runs and asks whether absolute hardness shifts imply ranking reversals.
+The campaign is therefore a pure re-analysis of PRIMARY outputs under a shared algorithm subset, designed to test ranking sensitivity rather than to introduce new search evidence.
+
+\subsection{Global hardness ordering}
+Across PRIMARY cells, E2 with $f=0.5$ is the hardest mean-FHR regime, whereas low-dimensional E3 cells and E2 with $f=1.5$ are among the easiest.
+Recipe ceilings remain outside ranking.
+This ordering confirms that constraint geometry can dominate nominal scale when budgets are matched.
+The global ordering is useful precisely because it is derived under a shared budget cell: without matched evaluations, ``hardest regime'' claims would be confounded by unequal search effort.
+E4 therefore begins from difficulty geography---which cells are hard---before asking whether relative algorithm tiers survive that geography.
+Placing sparse intervals above full-catalog NHANES in absolute difficulty also reframes common experimental priorities: enlarging food libraries without controlling interval width may look ambitious while leaving the true bottleneck untouched.
+Equally important is what the ordering does \emph{not} say: it does not say that scale is irrelevant for realism, only that scale is not the dominant absolute-FHR driver under the PRIMARY budget cell.
+A well-designed study can therefore retain large NHANES pools for ecological validity while still treating interval sparsity as the primary hardness dial.
+
+\subsection{Stable algorithm tiers}
+Cross-regime mean Friedman ranks (Table~\ref{tab:ranks}; Figs.~\ref{fig:e4ranks}--\ref{fig:heat}) reveal three tiers.
+The stable top tier comprises MA ($3.94$), ACMO-Diet ($4.07$), NSGA-II ($4.14$), and BMOEA ($4.34$).
+The middle tier includes SPEA2, RandomRepair, and RVEA.
+The lagging tier includes C-TAEA, Greedy, and Random (overall $7.13$).
+Tier membership is descriptive of the tested suite under FHR, not a claim of theoretical optimality.
+
+The tier structure is more informative than any single pairwise win.
+Top-tier methods remain near the front across E1 NHANES, E2 sparsity, and E3 dimensionality aggregates, while Random anchors the floor.
+Middle-tier methods are competitive in easier cells yet lose ground under sparse or high-dimensional pressure.
+This pattern anticipates the concordance result: if tiers are stable, Kendall~$\tau$ should be high even when absolute FHR moves.
+Conversely, if hardness merely shuffled winners, concordance would collapse.
+E4 tests that distinction quantitatively rather than by visual anecdote.
+Within the top tier, mean ranks are close enough that PRIMARY does not support crowning one member as a universal champion; the scientifically stable claim is family-level leadership of memetic/feasibility-biased search together with NSGA-II.
+The lagging tier's composition is likewise informative: Random validates that guided search is necessary, Greedy shows that myopic construction is insufficient for NHANES interval boxes, and C-TAEA's placement warns against equating constrained-archive theory with realized FHR under a particular implementation path.
+Middle-tier SPEA2 and RVEA occupy an intermediate interpretive zone---structured enough to beat the floor in many cells, yet not robust enough to join the leading family under sparse or high-dimensional stress.
+
+\begin{table}[!t]
+\centering
+\caption{Cross-regime mean Friedman ranks (1 $=$ best) with E2 hardest-cell ($f{=}0.5$) FHR mean$\pm$std across $10$ seeds (target-averaged within seed).}
 \label{tab:ranks}
-\begin{tabular}{lcccc}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
 \toprule
-Algorithm & E1 NHANES & E2 sparsity & E3 dim & Overall \\
+Algorithm & Mean Rank & FHR Mean ($f{=}0.5$) & FHR Std \\
 \midrule
-MA & 3.69 & 4.24 & 3.89 & \textbf{3.94} \\
-ACMO-Diet & 3.81 & 4.50 & 3.90 & 4.07 \\
-NSGA2 & 3.96 & 4.50 & 3.96 & 4.14 \\
-BMOEA & 4.24 & 4.74 & 4.04 & 4.34 \\
-SPEA2 & 4.78 & 5.22 & 4.23 & 4.74 \\
-RandomRepair & 4.90 & 5.21 & --- & 5.06 \\
-RVEA & 5.94 & 6.08 & 4.59 & 5.54 \\
-CTAEA & 7.88 & 6.82 & 5.79 & 6.83 \\
-Greedy & 7.28 & 6.42 & --- & 6.85 \\
-Random & 8.52 & 7.28 & 5.60 & 7.13 \\
+MA & \textbf{3.94} & 0.275 & 0.056 \\
+ACMO-Diet & 4.07 & 0.217 & 0.043 \\
+NSGA2 & 4.14 & 0.217 & 0.058 \\
+BMOEA & 4.34 & 0.192 & 0.040 \\
+SPEA2 & 4.74 & 0.183 & 0.035 \\
+RandomRepair & 5.06 & 0.242 & 0.026 \\
+RVEA & 5.54 & 0.158 & 0.026 \\
+CTAEA & 6.83 & 0.108 & 0.040 \\
+Greedy & 6.85 & 0.108 & 0.040 \\
+Random & 7.13 & 0.017 & 0.035 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
+\begin{figure}[!t]
 \centering
-\includegraphics[width=0.72\textwidth]{../results/figures/fig_e4_cross_regime_ranks.png}
+\includegraphics[width=\columnwidth]{../results/figures/fig_e4_cross_regime_ranks.png}
 \caption{E4: mean Friedman ranks across E1--E3 regimes (1 $=$ best).}
 \label{fig:e4ranks}
 \end{figure}
 
-\subsection{Search dynamics and mechanistic interpretation}
-A limited dynamics probe (BMOEA vs.\ Random on one NHANES subsample) exists under \texttt{results/raw/trajectories/}; PRIMARY campaigns do not log full generation trajectories for all runs.
-We therefore do not claim comprehensive dynamics conclusions.
-Empirically, feasibility-oriented/memetic methods and NSGA-II form a stable leading group.
-This is \emph{consistent with} the hypothesis that local improvement and feasibility pressure help in interval-constrained subset search, but without ablations we treat mechanism stories as interpretive rather than causal.
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{../results/figures/rank_concordance_heatmap.pdf}
+\caption{E4 heatmap of mean Friedman ranks (darker blue $=$ better / closer to rank~$1$).}
+\label{fig:heat}
+\end{figure}
 
-\subsection{Exact feasibility calibration}
-On NHANES-500 with candidate limit $300$, CBC returned Optimal for all $12$ representatives; four remained nutritionally infeasible (\texttt{rep\_000}, \texttt{005}, \texttt{008}, \texttt{011}).
-Zero FHR can therefore reflect empty feasible sets rather than evolutionary failure.
-MILP is used only as small-instance calibration.
+\subsection{Kendall $\tau$ concordance and absence of wholesale reversal}
+Among eight shared algorithms, pairwise Kendall concordance is high and significant:
+E1--E2 $\tau=0.982$ ($p=7.6\times10^{-4}$),
+E1--E3 $\tau=0.929$ ($p=4.0\times10^{-4}$),
+E2--E3 $\tau=0.909$ ($p=1.8\times10^{-3}$).
+Absolute FHR can therefore move dramatically while relative orderings remain largely aligned.
+This is, to our knowledge, the first quantitative rank-consistency verification for RCFA-style constrained subset-selection EAs across orthogonal hardness axes.
+The practical community implication is that mechanism tiers observed under one controlled axis are not overturned by the others in this suite---ranking is comparatively generalizable across RCFA regimes, even though absolute difficulty is not.
 
-\subsection{Target robustness}
-Cluster-12 coverage is a descriptive proxy favoring broader local coverage than random-12 under the adopted features; it is not claimed as statistical representativeness of all dietary targets.
+High concordance does not imply that all algorithms are interchangeable, nor that gaps are small.
+It implies that the \emph{order} of algorithms is stable while the \emph{level} of FHR is not.
+That separation is the central empirical message of NutriOpt-Bench for evolutionary computation: difficulty sensitivity and ranking sensitivity can decouple.
+A survey that reports only absolute FHR may exaggerate instability; a survey that reports only ranks may hide regime-dependent absolute risk of missing feasibility.
+PRIMARY therefore reports both.
+The slightly lower E2--E3 $\tau$ relative to E1--E2 still remains high in absolute terms, indicating modest rather than revolutionary reordering when sparsity and dimensionality stresses are compared.
+From a survey standpoint, these concordance values justify cautious transfer of mechanism tiers across RCFA hardness axes within NutriOpt-Bench, while still requiring authors to report absolute FHR so that readers see when a tier-stable ranking occurs in an easy versus hard cell.
+Put differently, high $\tau$ licenses statements about relative order; it does not license statements that all regimes are equally difficult.
 
-\section{Discussion}
-\subsection{What determines difficulty?}
-In the tested FHR regime, interval-induced tightness dominates nominal food-space scale.
-High constraint dimensionality matters mainly at $16$ nutrients.
-Benchmark cells with near-universal FHR $\approx 1$ (recipes; low-dim E3) provide little discrimination.
+\subsection{Alignment diagnostics and abandoned $N^*$ claims}
+Exploratory curve-alignment diagnostics (including dispersion summaries such as $\sigma_{\mathrm{align}}$) do not support a narrative of wholesale algorithm curve collapse across regimes.
+Separately, logistic fits used to speculate about a scale phase boundary $N^*$ are unstable under the available grids and are abandoned as primary claims.
+E4 therefore supports ranking concordance, not a scaling law.
+Abandoning $N^*$ is not a minor caveat: earlier exploratory narratives that sought a sharp scale transition are not retained as PRIMARY scientific conclusions.
+The evidence that survives scrutiny is concordance under orthogonal hardness axes, together with the qualitative hardness ordering in which sparse intervals dominate catalog growth.
+Future work may revisit scaling phenomena with denser grids, but the present manuscript refuses to elevate unstable $N^*$ fits into a claimed phase transition.
+This refusal is itself part of the experimental-survey contribution: PRIMARY claims are restricted to findings that survive fair-budget, orthogonal-axis scrutiny.
+Concordance survives; a scale phase boundary does not.
+Readers should therefore cite E4 for ranking stability and sparsity-dominated difficulty geography, not for a scaling law that the grid cannot support.
+Summarizing E4 in one sentence: absolute FHR is strongly regime-dependent, while shared-algorithm orderings remain highly concordant ($\tau=0.909$--$0.982$), with a stable top family and no wholesale reversal across axes.
+That sentence is the meta-analytic payload of NutriOpt-Bench; everything else in this section exists to justify its scope and its refusals.
+The corresponding practical warning is equally brief: do not infer rank reversals from absolute FHR plots alone, and do not infer easy regimes from stable ranks alone.
+Difficulty plots and rank tables answer different questions; NutriOpt-Bench requires both before any cross-regime superiority claim is ever made in formal print.
 
-\subsection{Does harder search change rankings?}
-Not dramatically for the shared algorithm set: Kendall $\tau$ remains high.
-Difficulty sensitivity and ranking sensitivity are empirically separable here.
+\section{Mechanistic Interpretation of EA Behaviors}
+\label{sec:discuss}
 
-\subsection{Evolutionary mechanisms}
-Leading performance of MA/ACMO/BMOEA/NSGA2 across hard cells is evidence-consistent with feasibility-oriented search being advantageous, not a proof of theoretical superiority.
-Random's stable gap indicates exploitable combinatorial structure relative to unstructured sampling.
+\subsection{Feasibility-biased and memetic EAs}
+MA, ACMO-Diet, and BMOEA occupy the stable leading tier under tight sparsity and high dimensionality.
+Their shared operational theme is intensified pressure toward feasible assemblies: local improvement, repair-like moves, or feasibility-aware acceptance alter the search trajectory relative to variation-only evolution.
+In RCFA, the bottleneck is often not objective diversification but entry into the nutrient interval box.
+Local, feasibility-directed exploitation is therefore well matched to sparse feasible regions.
+We treat this as an evidence-consistent mechanism--performance mapping, not as a causal proof in the absence of full ablations.
 
-\subsection{Implications for EC and beyond}
-Benchmarks should vary both absolute difficulty and ranking sensitivity.
-Structurally related domains (subset selection, resource allocation, constrained configuration) share ingredients of RCFA but were not evaluated here.
+Under $f=0.5$, where mean FHR falls to $0.172$, methods that spend evaluations refining near-feasible assemblies retain a measurable advantage over unstructured sampling.
+That advantage is still far from perfect reliability: even leading methods remain well below ceiling under tight boxes.
+The mechanistic lesson is therefore comparative rather than absolute.
+Feasibility bias helps relative to baselines, but sparse interval geometry remains a severe discovery problem under $100\mathrm{k}$ evaluations.
+ACMO-Diet's constrained multiobjective design~\cite{zhao2025acmodiet} is consistent with this reading insofar as PRIMARY places it in the leading FHR tier, without elevating it to a universal champion.
+Memetic intensification should thus be understood as a reliable ingredient for RCFA feasibility discovery in this suite, not as a finished theory of constrained subset search.
+Ablation-free interpretation also means we do not claim to know which subroutine---local improvement, repair probability, or acceptance bias---accounts for most of the observed FHR lift.
+The PRIMARY evidence supports the broader family label of feasibility pressure, which is sufficient for benchmarking guidance and intentionally weaker than a causal operator taxonomy.
 
-\section{Practical Algorithm Selection}
-Empirical, benchmark-derived guidance only:
-\begin{itemize}
-\item Difficult feasibility regimes ($f=0.5$; dim~$16$): prefer MA / ACMO-Diet / BMOEA / NSGA-II.
-\item Easy ceiling regimes (recipes; low dim): algorithm choice is less consequential for FHR.
-\item Random is not recommended when structured search is required; Greedy is not competitive with the leading group on NHANES PRIMARY.
-\item RandomRepair is competitive in some settings under equal budgets.
-\end{itemize}
-No universal champion is declared.
+\subsection{Dominance-based MOEA}
+NSGA-II remains competitive across E1--E3 and joins the top tier in E4.
+Non-dominated sorting with crowding provides robust cross-regime generalization: the method neither collapses on moderate NHANES scales nor loses all discrimination under tightened intervals.
+Its stability suggests that classical dominance search, when paired with a feasibility-aware decode, remains a strong default for constrained binary subset selection even when specialized memetic pressure is absent.
 
-\section{Limitations}
-Incomplete PRISMA screening; E3 empirical-cap padding; CTAEA/pymoo residual asymmetries; limited PRIMARY trajectory logging; soft-only diversity; no preference/cost/allergy axes; exploratory E4 curve-collapse/ADI/$N^*$ fits are unstable and relegated to supplement---no scaling phase boundary is claimed.
+This result is important for methodological humility.
+It is tempting, in application-oriented papers, to assume that specialized diet operators are strictly necessary for competitive FHR.
+PRIMARY does not support that strict necessity claim under the tested protocol: NSGA-II~\cite{deb2002} sits beside memetic/feasibility-biased methods in the leading group.
+Specialization may still matter for secondary objectives or for budgets beyond the PRIMARY cell, but it is not required to explain top-tier feasibility discovery here.
+The safer statement is that dominance search remains a high-value baseline that future RCFA methods should continue to beat under matched budgets.
+Its presence in the top tier also helps explain high Kendall~$\tau$: a broadly competent classical MOEA stabilizes rankings even as absolute FHR moves with sparsity and dimensionality.
+For practitioners, this implies a pragmatic default: if engineering budget allows only one mature MOEA baseline under the NutriOpt-Bench contract, NSGA-II remains a strong choice before specialized memetic machinery is introduced.
+
+\subsection{Indicator and reference-vector methods}
+SPEA2, RVEA, and C-TAEA form a weaker band under the hardest cells.
+Their mechanisms emphasize archive indicators or reference directions in objective space~\cite{zitzler2001,cheng2016,li2019ctaea}.
+When the primary difficulty is constraint satisfaction in a combinatorial subset space, objective-space guidance can under-adapt to interval-box feasibility, producing pronounced degradation at $f=0.5$ and at dimension~$16$.
+At dimension~$16$, for example, RVEA mean FHR falls to $0.733$ and C-TAEA to $0.592$, while Random sits at $0.300$.
+These gaps illustrate selective high-dimensional stress rather than a uniform collapse of all structured methods.
+
+C-TAEA's constrained two-archive design is conceptually aligned with feasibility pressure~\cite{li2019ctaea}, yet under the present pymoo-mediated instantiation and residual asymmetries it does not enter the leading FHR tier; we therefore avoid over-interpreting its theoretical intent beyond observed PRIMARY behavior.
+A fairer reading is that mechanism labels are not destiny: implementation path, decode coupling, and budget residuals can mediate realized FHR.
+PRIMARY reports what was observed under the frozen protocol; it does not claim that every reference-vector or two-archive idea is intrinsically weak for RCFA.
+SPEA2's middle-tier placement similarly suggests that indicator archives retain partial value, especially away from the sparsest cells, without matching the leading family's cross-regime reliability.
+
+\subsection{Heuristics and random baselines}
+Greedy local construction lacks sufficient global exploration for NHANES-scale interval boxes and remains near the lagging tier.
+Random search validates that RCFA is not trivially solvable by unstructured sampling: its persistently low FHR confirms exploitable combinatorial structure for guided EAs.
+RandomRepair can be competitive when given a fair budget, reinforcing that explicit feasibility repair is useful but not automatically dominant without memetic intensification.
+The residual evaluation counts for MA ($\approx 100.8\mathrm{k}$) and Greedy ($\approx 100.2\mathrm{k}$) are disclosed so that readers do not mistake small budget asymmetries for large mechanistic gaps.
+After the under-budget correction, RandomRepair's PRIMARY behavior on E1/E2 can be interpreted under a full $100\mathrm{k}$ ceiling, strengthening the claim that repair helps but does not by itself redefine the leading tier.
+Baselines therefore serve two roles: they establish a floor against which structured methods must improve, and they stress-test fairness narratives when repair operators previously suffered under-budget artifacts.
+
+\subsection{Mechanism--performance mapping}
+Synthesizing E1--E4, RCFA induces a stable hierarchy:
+feasibility-biased/memetic search and NSGA-II form a robust top family;
+indicator/reference methods occupy a middle-to-weak band under sparse and high-dimensional boxes;
+greedy/random baselines demarcate the floor.
+The hierarchy's robustness across axes explains the high Kendall~$\tau$: changing absolute hardness amplifies gaps but does not reorder mechanism families wholesale.
+This mapping is specific to the tested RCFA protocol and metric (FHR); it is offered as an interpretive guide for constrained subset-selection benchmarking, not as a universal EA ranking law.
+
+The mapping also clarifies what NutriOpt-Bench is \emph{not} claiming.
+It is not claiming that memetic search is theoretically optimal for all constrained combinatorial problems.
+It is not claiming that reference-vector methods cannot be redesigned to better target interval boxes.
+It is claiming that, under the present fair-budget PRIMARY evidence, feasibility pressure and classical dominance generalize more reliably for FHR than objective-space guidance alone, while absolute difficulty remains dominated by interval sparsity.
+That is a benchmarking conclusion, not a clinical or nutritional one.
+Future operator design can use this hierarchy as a null model: a new RCFA method should either raise FHR in sparse cells under matched budgets or demonstrably improve concordance-sensitive secondary metrics without degrading feasibility discovery.
+In that sense, NutriOpt-Bench functions less as a contest to name a winner and more as a stress geometry against which mechanism hypotheses can be falsified.
+A method that shines only on recipe ceilings, or only under relaxed intervals, fails the stress geometry even if it looks strong in isolation.
+Conversely, a method that preserves top-tier FHR at $f=0.5$ and at dimension~$16$ under matched budgets earns a stronger claim to robustness than any single-cell demonstration can provide.
+
+\section{Benchmarking Guidelines and Practical Discussion}
+\label{sec:guidelines}
+
+\subsection{Algorithm failure versus inherent infeasibility}
+On NHANES-500 with candidate limit $300$, CBC returns Optimal for all twelve representative targets, yet four remain interval-infeasible under the prescribed boxes ($4/12$).
+Zero FHR on such targets is not evidence of evolutionary incompetence.
+A minimal community standard is therefore: calibrate a subset of instances with an exact or reduced-pool oracle before interpreting all failures as search failures.
+Without that separation, benchmark tables systematically confound empty feasible sets with weak solvers, biasing both algorithm rankings and survey narratives about ``hard'' diet instances.
+Calibration need not solve full NHANES MILPs; reduced-pool exact checks already suffice to expose interval-infeasible targets and to discipline language around failure modes.
+Reporting conventions should state, for calibrated subsets, how many targets are intrinsically infeasible and whether those targets are excluded from FHR aggregates or retained with explicit annotation.
+The $4/12$ calibration outcome in this study is already enough to change the semantics of zero-success cells: without it, those cells could have been narrated as evolutionary failure; with it, they become instance-geometry facts that any solver must confront.
+Community adoption of even lightweight reduced-pool oracles would therefore improve the epistemic quality of RCFA comparisons more than the introduction of yet another uncalibrated algorithm variant.
+
+\subsection{Recommended RCFA evaluation protocol}
+We recommend:
+(i)~fixed evaluation budgets with disclosed residuals;
+(ii)~exclusion of trivial recipe ceiling regimes from ranking;
+(iii)~multi-axis hardness evaluation covering scale, interval sparsity, and nutrient dimensionality;
+(iv)~primary reporting by FHR (or an equally explicit feasibility predicate);
+(v)~cross-regime concordance statistics when multiple axes are claimed.
+These rules convert RCFA comparisons from anecdotal wins into portable experimental claims.
+
+A sixth, closely related recommendation follows from E4: report both absolute difficulty and ranking concordance.
+FHR alone answers whether a regime is hard; Kendall~$\tau$ answers whether relative tiers survive that hardness.
+Papers that claim ``algorithm~$A$ generalizes across settings'' should show concordance, not merely a win in each cell.
+Papers that claim ``setting~$S$ is harder'' should show absolute FHR shifts under matched budgets, not merely different winners.
+Together, these recommendations operationalize the paper's central methodological distinction between difficulty sensitivity and ranking sensitivity.
+They are intentionally minimal: a paper can satisfy them without adopting NutriOpt-Bench's exact food pools, provided it freezes a budget cell, varies named hardness axes, reports an explicit feasibility predicate, and tests concordance when claiming cross-setting generalization.
+The point is commensurability, not monoculture.
+
+\subsection{Practical algorithm selection under RCFA}
+For difficult feasibility regimes ($f=0.5$ or dimension~$16$), prefer MA, ACMO-Diet, BMOEA, or NSGA-II.
+For easy ceiling regimes (recipes; low dimension), algorithm choice is weakly consequential for FHR.
+Random is not recommended when structured search is available; Greedy is not competitive with the leading group on NHANES PRIMARY.
+No universal champion is endorsed.
+Selection advice here is conditional on the PRIMARY metric and budget cell: it is a practical shortlist for feasibility discovery, not a permanent league table for all future RCFA variants.
+When secondary objectives (cost, preference proxies, diversity) matter, the shortlist remains a feasibility-first filter: methods that cannot enter the interval box under matched budgets are poor candidates regardless of secondary polish.
+
+\subsection{Pitfalls to avoid}
+Avoid ranking on recipe-only suites; avoid unmatched budgets; avoid treating scale as a sufficient hardness proxy; avoid equating zero success with algorithmic failure without feasibility calibration; avoid claiming rank reversals without concordance tests.
+These pitfalls recur in dietary-optimization evaluation and are precisely what NutriOpt-Bench is designed to correct.
+A final pitfall is rhetorical inflation: converting a single-cell win into a claim of universal superiority, or converting an exploratory scale fit into a phase-transition law.
+PRIMARY evidence supports orthogonal hardness control, sparsity-dominated absolute difficulty, and high ranking concordance; it does not support a universal champion or an $N^*$ transition narrative.
+Authors should also avoid mixing recipe and NHANES results in a single ranking table, which would let ceiling cells dilute discriminative NHANES evidence.
+A related reporting pitfall is to declare ``no significant difference'' in a ceiling cell and then over-generalize that indifference to sparse NHANES regimes where Friedman tests reject equality.
+PRIMARY's dimension-$6$ non-significance and recipe perfect hit rates illustrate exactly that trap.
+Good practice is to pre-declare which cells are diagnostic ceilings and which cells are ranking arenas, then to keep those roles fixed in the narrative.
+Finally, guidelines should travel with the artifacts: releasing raw run CSVs, fairness residuals, and calibration outcomes is part of the evaluation protocol, not an optional appendix courtesy.
+Without those artifacts, even a well-written methods section cannot be audited for budget equality or empty-box contamination.
+NutriOpt-Bench therefore pairs its textual recommendations with released PRIMARY freezes so that the guidelines are executable rather than merely hortatory.
+Where space is limited, a paper can still meet the spirit of these guidelines by stating the budget cell, naming the hardness axes varied, reporting FHR, and either computing Kendall~$\tau$ or explicitly declining cross-regime generalization claims.
+
+\section{Limitations and Future Directions}
+\label{sec:limit}
+Several limitations bound the present claims.
+First, E3 completes missing nutrients with empirical caps before prefix projection; dimensionality effects must be read under this construction.
+Alternative nutrient-orderings or target-complete nutrient sets could shift the location of selective degradation even if the qualitative ceiling-at-low-dimension pattern persists.
+Second, residual objective/decode asymmetries remain between native paths and pymoo-mediated C-TAEA instantiations.
+Those asymmetries caution against strong theory-to-result attributions for any single pymoo-wrapped solver.
+Third, exploratory logistic $N^*$ phase-transition fits are unstable and are abandoned as primary scientific claims.
+The paper therefore refuses a scaling-law interpretation of E1 despite the availability of large NHANES pools.
+
+Fourth, preference, cost, and allergy constraints are absent; the benchmark targets feasibility discovery under nutrient interval boxes, not full personalization.
+Adding those constraints would change both the feasible-set geometry and the appropriate secondary metrics; they are left to future protocol extensions rather than silently mixed into PRIMARY FHR.
+Fifth, literature screening remains a structured analysis rather than a completed PRISMA iteration.
+The related-work critique is organized by evaluation assumptions and protocol defects, not by a systematic review flowchart.
+Sixth, intrinsically infeasible instances can still confound naive success rates if oracle calibration is omitted.
+Even with the reported $4/12$ interval-infeasible calibration cases, broader instance libraries will require routine feasibility auditing.
+
+Additional practical limits include incomplete PRIMARY trajectory logging and soft-only diversity surrogates.
+Without dense trajectories, fine-grained claims about when solvers first enter the box are limited; without hard diversity constraints, FHR does not speak to assembly variety.
+The fairness residuals for MA and Greedy, while small, also remind readers that implementation details can leak into evaluation counts even under an intended $100\mathrm{k}$ ceiling.
+Future work should extend multi-axis hardness designs to broader constrained combinatorial domains; integrate user preference and cost constraints without sacrificing fair budgets; develop dedicated RCFA feasibility-repair operators; and standardize MILP-aided instance feasibility calibration as a required reporting step.
+These directions preserve the paper's optimization focus while increasing ecological coverage of real decision constraints.
+They also offer a path to test whether the present difficulty--ranking separation survives richer constraint vocabularies, or whether new axes reorder tiers that currently remain concordant.
+A further methodological priority is denser logging of evaluations-to-first-feasible under sparse boxes, which would complement FHR with a latency-style view of discovery without abandoning the fair-budget grammar.
+Another limitation is scope of mechanism coverage: the suite samples representative families rather than every modern constrained MOEA variant, so tier boundaries could shift if substantially different operators are added under the same budget cell.
+Relatedly, wall-clock comparisons are intentionally de-emphasized; evaluation counts are the fairness currency, and heterogeneous implementations would make raw runtime rankings misleading.
+Finally, the survey component critiques evaluation practice along structural axes but does not claim an exhaustive bibliographic census of every diet-optimization paper.
+These bounds do not undermine the PRIMARY findings; they delimit the inferential radius within which those findings should be cited.
+Future extensions that add preference and cost constraints should preserve the same orthogonal-axis discipline, otherwise new ecological features will reintroduce the confounding the benchmark was built to remove.
+A concrete near-term extension is to repeat E2-style sparsity sweeps under preference-augmented objectives while keeping the hard interval box fixed, thereby testing whether secondary objectives reorder tiers that currently remain concordant under FHR alone.
+Another is to enlarge the calibration panel beyond the present twelve-target reduced-pool check, so that the base rate of interval-infeasible instances can be estimated more tightly across NHANES subsamples.
+Both extensions would strengthen ecological coverage without abandoning the fair-budget grammar that makes PRIMARY portable.
+Until those extensions exist, claims outside the stated axes---especially clinical effectiveness, personalized adherence, or universal solver superiority---remain out of scope by design.
+Within scope, the chief risk remains over-interpretation of ceiling cells and under-reporting of empty boxes; both risks are mitigated by the calibration and ranking rules above, but only if future studies actually apply them.
+The limitations section is therefore not a polite disclaimer: it is an operational boundary for what PRIMARY currently warrants.
+Within that boundary, NutriOpt-Bench is best read as a fair-budget existence proof that orthogonal hardness control is feasible for RCFA, not as a finished atlas of every constrained food-assembly variant.
+Expanding the atlas is future work; preserving the contract is the present requirement.
 
 \section{Conclusion}
-RCFA provides a controlled large-scale range-constrained combinatorial regime for evolutionary computation.
-Within NutriOpt-Bench PRIMARY, interval tightness most strongly modulates absolute FHR; NHANES scale alone does not collapse FHR under $100$k evaluations; dimensionality becomes heterogeneous mainly at $16$ nutrients.
-MA, ACMO-Diet, NSGA-II, and BMOEA form a relatively stable leading group, and cross-regime Kendall concordance is high ($\tau=0.909$--$0.982$).
-Thus, under the tested budgets and algorithms, changes in problem difficulty do not necessarily imply changes in relative algorithm ranking---a separation between difficulty sensitivity and ranking sensitivity.
+\label{sec:concl}
+This experimental survey formulated RCFA as interval-box constrained binary subset selection and introduced NutriOpt-Bench, a fair-budget suite with three orthogonal hardness axes: food-library scale, nutrient-interval sparsity, and nutrient-constraint dimensionality.
+PRIMARY evidence shows that interval sparsity dominates absolute feasibility difficulty, with mean FHR moving from $0.172$ at $f=0.5$ to $0.761$ at $f=1.0$ and $0.962$ at $f=1.5$.
+NHANES scale alone does not collapse FHR under $100{,}000$ evaluations: mean FHR remains approximately $0.76$--$0.82$ from $5\mathrm{K}$ to full NHANES, while recipe catalogs sit at a trivial ceiling of $\mathrm{FHR}=1.0$.
+High dimensionality induces selective degradation of weaker solvers---notably Random ($0.300$), C-TAEA ($0.592$), and RVEA ($0.733$) at dimension~$16$---while low-dimensional regimes remain near ceiling ($0.992$/$0.983$ at $6$/$9$ nutrients; $0.946$ at $12$; $0.795$ at $16$).
+Recipe catalogs must not ground ranking claims intended for NHANES-style pools.
 
-\section*{Data and Code}
-Repository \texttt{nutri-range-opt-survey}.
-PRIMARY CSVs under \texttt{results/raw/}; reports under \texttt{results/statistics/}; freezes in \texttt{docs/}.
+Cross-regime meta-analysis confirms a stable EA hierarchy via Kendall~$\tau$ ($0.982$/$0.929$/$0.909$ for E1--E2, E1--E3, and E2--E3, with corresponding $p$-values $7.6\times10^{-4}$, $4.0\times10^{-4}$, and $1.8\times10^{-3}$), with memetic/feasibility-biased methods and NSGA-II forming a leading family and no wholesale rank reversal across axes.
+Methodologically, distinguishing algorithm search failure from inherent instance infeasibility is essential: a nontrivial fraction of calibrated targets can be interval-infeasible ($4/12$) even when an exact solver returns Optimal on the reduced model.
+Residual budget asymmetries (MA/Greedy medians $\approx 100.8\mathrm{k}$/$100.2\mathrm{k}$) are disclosed rather than idealized away.
 
-\begin{thebibliography}{99}
-\bibitem[Cheng et~al.(2016)]{cheng2016}
-R.~Cheng, Y.~Jin, M.~Olhofer, and B.~Sendhoff.
-\newblock A reference vector guided evolutionary algorithm for many-objective optimization.
-\newblock {\em IEEE Transactions on Evolutionary Computation}, 20(5):773--791, 2016.
+Collectively, these results refute three traditional evaluation assumptions---that scale is the decisive hardness driver, that recipe rankings generalize to NHANES-style pools, and that underperformance equals algorithmic defect without feasibility calibration.
+We do not claim a universal champion, and we abandon exploratory $N^*$ phase-transition narratives as primary conclusions.
+NutriOpt-Bench therefore supplies a portable experimental language for future constrained subset-selection studies in evolutionary computation: vary hardness orthogonally, match budgets, report FHR, test concordance, and calibrate feasibility before interpreting failure.
+The lasting contribution is not a league table of solvers, but a reproducible hardness grammar under which future EMO claims about RCFA can be made commensurable.
+Under that grammar, interval sparsity is the dominant absolute-difficulty axis in the tested design; food-pool scale supplies realism without inducing FHR collapse at $100{,}000$ evaluations; and nutrient dimensionality reveals selective rather than universal degradation.
+Cross-regime Kendall concordance remains high, so absolute difficulty and relative ranking must be reported as separate scientific objects.
+If the community adopts matched budgets, orthogonal hardness sweeps, explicit feasibility predicates, concordance tests, and reduced-pool calibration, then subsequent algorithm papers can accumulate comparable evidence instead of incomparable anecdotes.
+That is the survey's intended methodological endpoint for evolutionary multiobjective research on range-constrained food assembly.
+In closing, NutriOpt-Bench asks the community to stop treating recipe ceilings, unmatched budgets, and uncalibrated zero-success cells as sufficient evidence for algorithm superiority.
+The PRIMARY campaigns show what becomes visible once those practices are replaced by orthogonal hardness control: sparsity dominates absolute difficulty, scale does not collapse FHR under the tested ceiling, dimensionality degrades selectively, and rankings remain largely stable.
+Those findings are optimization results about feasibility discovery; they neither prescribe diets nor crown a permanent champion.
+Future work can extend the axes, enrich constraints, and refine operators, but it should keep the same experimental contract if it wishes to remain comparable to NutriOpt-Bench.
+Only under that contract can the field turn isolated diet-optimization demos into cumulative evolutionary-computation evidence.
 
-\bibitem[Deb et~al.(2002)]{deb2002}
-K.~Deb, A.~Pratap, S.~Agarwal, and T.~Meyarivan.
-\newblock A fast and elitist multiobjective genetic algorithm: NSGA-II.
-\newblock {\em IEEE Transactions on Evolutionary Computation}, 6(2):182--197, 2002.
 
-\bibitem[Ga\'{a}l et~al.(2005)]{gaal2005}
-B.~Ga\'{a}l, I.~Vass\'{a}nyi, and G.~Kozmann.
-\newblock A novel artificial intelligence method for weekly dietary menu planning.
-\newblock {\em Methods of Information in Medicine}, 44(5):655--664, 2005.
+\section*{Data Availability}
+Code, PRIMARY CSVs, tables, figures, and protocol freezes are available at \url{https://github.com/tyrone1979/nutri-range-opt-survey/}.
+PRIMARY data: \texttt{results/raw/}; reports: \texttt{results/statistics/}; documentation: \texttt{docs/}.
+Bibliography verification log: \texttt{docs/BIBLIOGRAPHY\_VERIFICATION.json}.
+Extended cell-by-cell FHR matrices, pairwise Wilcoxon tests, abandoned $N^*$ diagnostics, FFG distributions, and fairness residuals are provided in the companion Supplemental Material (Tables~S1--S9, Figs.~S1--S3), regenerated by \texttt{scripts/build\_supplement.py}.
 
-\bibitem[Li et~al.(2019)]{li2019ctaea}
-K.~Li, R.~Chen, G.~Fu, and X.~Yao.
-\newblock Two-archive evolutionary algorithm for constrained multiobjective optimization.
-\newblock {\em IEEE Transactions on Evolutionary Computation}, 23(2):303--315, 2019.
-
-\bibitem[Seljak(2006)]{seljak2006}
-B.~K.~Seljak.
-\newblock Computer-based dietary menu planning.
-\newblock {\em Journal of Food Composition and Analysis}, 19(6--7):687--695, 2006.
-
-\bibitem[Smith(1959)]{smith1959}
-V.~E.~Smith.
-\newblock Linear programming models for the determination of palatable human diets.
-\newblock {\em Journal of Farm Economics}, 41(2):272--283, 1959.
-
-\bibitem[Stigler(1945)]{stigler1945}
-G.~J.~Stigler.
-\newblock The cost of subsistence.
-\newblock {\em Journal of Farm Economics}, 27(2):303--314, 1945.
-
-\bibitem[Zhang and Li(2007)]{zhang2007}
-Q.~Zhang and H.~Li.
-\newblock MOEA/D: A multiobjective evolutionary algorithm based on decomposition.
-\newblock {\em IEEE Transactions on Evolutionary Computation}, 11(6):712--731, 2007.
-
-\bibitem[Zitzler et~al.(2001)]{zitzler2001}
-E.~Zitzler, M.~Laumanns, and L.~Thiele.
-\newblock SPEA2: Improving the strength Pareto evolutionary algorithm.
-\newblock TIK-Report 103, ETH Zurich, 2001.
-\end{thebibliography}
-
-\appendix
-\section{Supplementary pointers}
-Extended tables, exploratory E4 diagnostics (curve-collapse, ADI, unstable $N^*$ fits), parameters, and reproducibility commands: \texttt{manuscript/supplementary.tex}, \texttt{docs/}, \texttt{results/}.
+\balance
+\nocite{*}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
 
 \end{document}
