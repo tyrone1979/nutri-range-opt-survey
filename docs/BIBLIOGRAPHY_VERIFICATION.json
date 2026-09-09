@@ -1,0 +1,1265 @@
+{
+  "count": 150,
+  "failed_lookups": [
+    {
+      "doi": "10.1016/j.eswa.2024.123456",
+      "cluster": "C_diet_moo_recommend",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "doi": "10.1109/tevc.2020.2982306",
+      "cluster": "D_moea_methods",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "doi": "10.1109/tevc.2021.3066433",
+      "cluster": "D_moea_methods",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "schema_counts": {
+    "crossref": 144,
+    "datacite": 2
+  },
+  "cluster_counts": {
+    "A_classical_diet_OR": 16,
+    "B_evolutionary_menu": 22,
+    "C_diet_moo_recommend": 40,
+    "D_moea_methods": 18,
+    "E_benchmark_stats": 14,
+    "F_sparse_large_combo": 16,
+    "G_nutrition_data": 12,
+    "I_memetic_repair": 12
+  },
+  "year_counts": {
+    "2026": 33,
+    "2025": 34,
+    "2024": 16,
+    "2023": 17,
+    "2022": 8,
+    "2021": 7,
+    "2015": 4,
+    "1959": 1,
+    "1945": 1,
+    "2020": 5,
+    "2019": 6,
+    "2018": 5,
+    "2017": 3,
+    "2009": 1,
+    "2006": 1,
+    "2005": 1,
+    "2016": 1,
+    "2007": 1,
+    "2002": 1,
+    "2001": 1,
+    "2010": 2,
+    "2014": 1
+  },
+  "required_present": {
+    "ACMO-Diet": true,
+    "DMP4P": true,
+    "Zhao_LLM_RE_excluded": true
+  },
+  "entries": [
+    {
+      "doi": "10.1017/s1368980025101316",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2026,
+      "title": "How expensive is a healthy diet in Europe? Using Linear Programming as a standardised method for calculating European Food Reference Budgets",
+      "key": "taeger2026howexpensiveisahfc87"
+    },
+    {
+      "doi": "10.1016/j.omega.2024.103237",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2025,
+      "title": "Courier assignment in meal delivery via integer programming: A case study in Rome",
+      "key": "cosmi2025courierassignmend703"
+    },
+    {
+      "doi": "10.26554/sti.2025.10.2.588-597",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2025,
+      "title": "Economical and Mathematical Impact on Planning Balanced and Nutritious Diet for  Paralympic (Autistic) Athlete (100M Sprinter) Using Linear and Integer Programming  Approach",
+      "key": "mohdzailani2025economicalandmate1aa"
+    },
+    {
+      "doi": "10.1016/j.ajcnut.2025.06.022",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2025,
+      "title": "Diet optimization: modeling iron and zinc absorption by nonlinear programming and piecewise linear approximation using National Health and Nutrition Examination Survey",
+      "key": "vanwonderen2025dietoptimization07b2"
+    },
+    {
+      "doi": "10.46254/sa05.20240041",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2024,
+      "title": "Optimizing Canine Nutrition: A Linear Programming Approach for Military Dogs' Diet",
+      "key": "saadiaharvy2024optimizingcaninec3d3"
+    },
+    {
+      "doi": "10.3390/nu15245098",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2023,
+      "title": "Optimization of a Food List for Food Frequency Questionnaires Using Mixed Integer Linear Programming: A Proof of Concept Based on Data from the Second German National Nutrition Survey",
+      "key": "blaurock2023optimizationofaf6083"
+    },
+    {
+      "doi": "10.61173/bkvcym82",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2023,
+      "title": "Diet problem by using Linear Programming",
+      "key": "ding2023dietproblembyusif150"
+    },
+    {
+      "doi": "10.1155/2023/1271115",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2023,
+      "title": "A Systematic Review of Linear Programming Techniques as Applied to Diet Optimisation and Opportunities for Improvement",
+      "key": "donkor2023asystematicrevie188c"
+    },
+    {
+      "doi": "10.3390/nu14030487",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2022,
+      "title": "Compliance, Adherence and Concordance Differently Predict the Improvement of Uremic and Microbial Toxins in Chronic Kidney Disease on Low Protein Diet",
+      "key": "demauri2022complianceadhere80f6"
+    },
+    {
+      "doi": "10.5220/0011361000003438",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2022,
+      "title": "Linear Programming: A Diet Problem with Methane Emission",
+      "key": "xie2022linearprogrammincd87"
+    },
+    {
+      "doi": "10.3390/nu13082688",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2021,
+      "title": "Flavonoid-Modifying Capabilities of the Human Gut Microbiome—An In Silico Study",
+      "key": "goris2021flavonoidmodifyi8b57"
+    },
+    {
+      "doi": "10.1016/j.omega.2019.102123",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2021,
+      "title": "A data-driven prediction approach for sports team performance and its application to National Basketball Association",
+      "key": "li2021adatadrivenpredie114"
+    },
+    {
+      "doi": "10.1016/j.cor.2020.105087",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2021,
+      "title": "Iterated local search with tabu search for the weighted vertex coloring problem",
+      "key": "nogueira2021iteratedlocalsea0abf"
+    },
+    {
+      "doi": "10.4172/2155-9600.s14-002",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 2015,
+      "title": "Optimized Nutrients Diet Formulation of Broiler Poultry Rations in Nigeria Using Linear Programming",
+      "key": "olugbengao2015optimizednutrien9648"
+    },
+    {
+      "doi": "10.2307/1235154",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 1959,
+      "title": "Linear Programming Models for the Determination of Palatable Human Diets",
+      "key": "smith1959"
+    },
+    {
+      "doi": "10.2307/1231810",
+      "schema": "crossref",
+      "cluster": "A_classical_diet_OR",
+      "year": 1945,
+      "title": "The Cost of Subsistence",
+      "key": "stigler1945"
+    },
+    {
+      "doi": "10.63556/jotags.2026.1826",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2026,
+      "title": "Genetik Varyasyonlar Doğrultusunda Antioksidan Odaklı Menü Planlaması: Gastronomi Temelli Bir Model (Antioxidant-Focused Menu Planning Based on Genetic Variations: A Gastronomy Based Model)",
+      "key": "ftc2026genetikvaryasyone66c"
+    },
+    {
+      "doi": "10.28919/cmbn/9256",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2025,
+      "title": "Menu planning using multi-complex differential evolution algorithm for wasting children",
+      "key": "anon2025menuplanningusind0f8"
+    },
+    {
+      "doi": "10.1016/j.clnesp.2024.07.848",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2024,
+      "title": "Dietary menu planning using seasonal and regional foods and inpatient contentment",
+      "key": "bottairi2024dietarymenuplann5140"
+    },
+    {
+      "doi": "10.1109/candarw64572.2024.00079",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2024,
+      "title": "AI-Based Multi-Objective Optimization Algorithm for Intelligent School Lunch Menu Planning System",
+      "key": "shen2024aibasedmultiobje462e"
+    },
+    {
+      "doi": "10.15237/10.15237/gida.gd24063",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2024,
+      "title": "DEVELOPING MENU PLANNING SOFTWARE USING OPTIMIZATION AND ARTIFICIAL INTELLIGENCE ALGORITHM",
+      "key": "tarlak2024developingmenupl6feb"
+    },
+    {
+      "doi": "10.1109/icimcis60089.2023.10348618",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2023,
+      "title": "Optimization Of Genetic Algorithm Using PSO In Food Menu Recommendation System",
+      "key": "andriani2023optimizationofge65df"
+    },
+    {
+      "doi": "10.55041/ijsrem26682",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2023,
+      "title": "Automated Menu Planning Algorithm for Children: Food Recommendation by Dietary Management System using SVM, RF, DT for Indian Food Database",
+      "key": "sawalkar2023automatedmenuplaadc5"
+    },
+    {
+      "doi": "10.46254/au02.20230123",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2023,
+      "title": "Automatic Menu Planning of Cafeterias Serving a la Carte Menu",
+      "key": "yamazaki2023automaticmenuplac374"
+    },
+    {
+      "doi": "10.29138/ijeeit.v4i1.1253",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2021,
+      "title": "Menu Design For Pregnant Women Diet                                For Stunting Prevention Using Genetic Algorithm",
+      "key": "hermawan2021menudesignforprecae9"
+    },
+    {
+      "doi": "10.17977/um069v1i22021p70-77",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2021,
+      "title": "Food Menu Recommendations Based on Recommended Dietary \nAllowances using Genetic Algorithm",
+      "key": "megatama2021foodmenurecommenfd9e"
+    },
+    {
+      "doi": "10.1109/dasa51403.2020.9317191",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2020,
+      "title": "Incorporating the decision maker's preferences in Dietary Menu Planning problem",
+      "key": "ichraf2020incorporatingthef9db"
+    },
+    {
+      "doi": "10.7454/jitps.v4i2.87",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2019,
+      "title": "ANALYSIS OF MENU AND MENU ENGINEERING PLANNING IN PASTRY DEPARTMENTS IN MERCURE HOTEL JAKARTA SIMATUPANG",
+      "key": "anon2019analysisofmenuanca9a"
+    },
+    {
+      "doi": "10.1109/cec.2019.8790339",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2019,
+      "title": "A Novel Memetic Algorithm with Explicit Control of Diversity for the Menu Planning Problem",
+      "key": "segura2019anovelmemeticalgb128"
+    },
+    {
+      "doi": "10.1109/access.2018.2794198",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2018,
+      "title": "Bacterial Foraging Optimization Algorithm for Menu Planning",
+      "key": "hernandezocana2018bacterialforagind382"
+    },
+    {
+      "doi": "10.1109/cec.2018.8477888",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2018,
+      "title": "An Evolutionary Mono-Objective Approach for Solving the Menu Planning Problem",
+      "key": "moreira2018anevolutionarymo6021"
+    },
+    {
+      "doi": "10.17654/ms103010171",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2018,
+      "title": "MALAYSIAN MENU PLANNING MODEL USING SELF-ADAPTIVE HYBRID GENETIC ALGORITHM (SHGA)",
+      "key": "razali2018malaysianmenupla70a1"
+    },
+    {
+      "doi": "10.47963/joss.v8i1.310",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2017,
+      "title": "Menu planners’ adherence to nutritional guidelines in menu planning in Osu, Ghana",
+      "key": "addisonakotoye2017menuplannersadhef76e"
+    },
+    {
+      "doi": "10.1145/3067695.3076070",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2017,
+      "title": "The menu planning problem",
+      "key": "moreira2017themenuplanningp9623"
+    },
+    {
+      "doi": "10.1016/j.procs.2015.04.070",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2015,
+      "title": "Automated Menu Planning Algorithm for Children: Food Recommendation by Dietary Management System using ID3 for Indian Food Database",
+      "key": "kale2015automatedmenupla59f4"
+    },
+    {
+      "doi": "10.1016/j.jfca.2009.02.006",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2009,
+      "title": "Computer-based dietary menu planning",
+      "key": "seljak2009"
+    },
+    {
+      "doi": "10.1109/ines.2006.1689351",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2006,
+      "title": "Dietary Menu Planning Using an Evolutionary Method",
+      "key": "vassanyi2006"
+    },
+    {
+      "doi": "10.1055/s-0038-1634022",
+      "schema": "crossref",
+      "cluster": "B_evolutionary_menu",
+      "year": 2005,
+      "title": "A Novel Artificial Intelligence Method for Weekly Dietary Menu Planning",
+      "key": "gaal2005"
+    },
+    {
+      "doi": "10.1016/j.smhl.2026.100648",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Adaptive neural network model for personalized food-allergen elimination diet recommendation",
+      "key": "alamsyah2026adaptiveneuralne3287"
+    },
+    {
+      "doi": "10.56726/irjmets79414",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "AI-Powered Personalized Fitness Tracker with Diet and Workout Recommendation Using Machine Learning",
+      "key": "anon2026aipoweredpersona85a5"
+    },
+    {
+      "doi": "10.64388/irev9i10-1715935",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "FitCluster AI: A Semi-Personalized Fitness and Diet Recommendation System Using Rule-Based and Lightweight Machine Learning Techniques",
+      "key": "anon2026fitclusteraiasemc36b"
+    },
+    {
+      "doi": "10.56726/irjmets97074",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Nutri Navigator: An AI-Powered Personalized Diet and Workout Recommendation System Using Flask and Python",
+      "key": "anon2026nutrinavigatoran30d0"
+    },
+    {
+      "doi": "10.22214/ijraset.2026.78822",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Personalized Diet Recommendation System Using BMI, BMR, and KNN-Based Nutritional Similarity Analysis",
+      "key": "aswani2026personalizeddiet9dfc"
+    },
+    {
+      "doi": "10.1109/insect68872.2026.11663925",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Cure Connect: A Secure and Intelligent Unified EHR Platform with Personalized Diet Recommendation",
+      "key": "bhilare2026cureconnectasecudbe5"
+    },
+    {
+      "doi": "10.1016/j.eswa.2025.129360",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Integration of sustainable diet planning problem under neutrosophic fuzzy multi-objective optimization",
+      "key": "divya2026integrationofsus0867"
+    },
+    {
+      "doi": "10.33395/sinkron.v10i3.16305",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "A Web-Based Personalized Diet Recommendation System Using Decision Tree for Food Suitability Classification",
+      "key": "farhansyah2026awebbasedpersonafd97"
+    },
+    {
+      "doi": "10.1109/icmlas67792.2026.11483695",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Nutrivision: Design and Implementation of an AI-Based Food Image Analysis and Personalized Diet Recommendation System",
+      "key": "gladence2026nutrivisiondesige2d0"
+    },
+    {
+      "doi": "10.23919/indiacom70271.2026.11526474",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Personalized Diet Recommendation Using Transfer Learning on Tabular Health Data",
+      "key": "krishna2026personalizeddietdb19"
+    },
+    {
+      "doi": "10.1016/j.clnesp.2026.103457",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Comment on “Intelligent diet recommendation system powered by artificial intelligence for personalized nutritional solutions”",
+      "key": "kumar2026commentonintelliacc1"
+    },
+    {
+      "doi": "10.1109/icsscna68616.2026.11546869",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "An End-to-End Laboratory Report Analysis and Personalized Diet Recommendation Framework",
+      "key": "lakshmi2026anendtoendlabora77c9"
+    },
+    {
+      "doi": "10.55041/isjem06518",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Personalized Diet and Wellness Recommendation System",
+      "key": "m2026personalizeddiet03fd"
+    },
+    {
+      "doi": "10.1109/ickecs70176.2026.11528053",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Heart Disease Prediction with Personalized Diet and Exercise Recommendation using Machine Learning",
+      "key": "mishra2026heartdiseasepreda682"
+    },
+    {
+      "doi": "10.55041/ijsrem64751",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Personalized Diet Recommendation and Meal Planning System Using Machine Learning Techniques",
+      "key": "misskhalateshradha2026personalizeddietf71f"
+    },
+    {
+      "doi": "10.55041/ijsmt.v2i4.238",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Nutrifitpro: AI-Based Personalized Fitness and Diet Recommendation System",
+      "key": "rameshwaramsuryava2026nutrifitproaibasdbc4"
+    },
+    {
+      "doi": "10.1007/s12046-026-03200-x",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Solving a Fermatean fuzzy multi-objective optimization problem with its application in diet problem",
+      "key": "sharma2026solvingafermateab474"
+    },
+    {
+      "doi": "10.29284/y463wd33",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2026,
+      "title": "Adaptive Ai Recommendation Engine For Personalized Diet And Health Behavior Change",
+      "key": "veerakumaran2026adaptiveairecommfba1"
+    },
+    {
+      "doi": "10.38124/ijisrt/25mar1573",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Nutrient Recommendation System for  Personalized Diet",
+      "key": "2025nutrientrecommen1629"
+    },
+    {
+      "doi": "10.1016/j.clnesp.2025.09.002",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Intelligent diet recommendation system powered by artificial intelligence for personalized nutritional solutions",
+      "key": "amadeh2025intelligentdietr324d"
+    },
+    {
+      "doi": "10.56726/irjmets81270",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "PERSONALIZED DIET RECOMMENDATION SYSTEM USING ARTIFICIAL NEURAL NETWORKS",
+      "key": "anon2025personalizeddiet5dda"
+    },
+    {
+      "doi": "10.24072/pci.nutrition.100003",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Recommendation of: Sustainable diets: Links between knowledge, motivations and food practices. Round#2",
+      "key": "anon2025recommendationof4602"
+    },
+    {
+      "doi": "10.1016/j.jclepro.2025.145233",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Integrating multi-criteria decision-making with multi-objective optimization for sustainable diet design",
+      "key": "bashiri2025integratingmulti038a"
+    },
+    {
+      "doi": "10.1109/iccea65460.2025.11103305",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Personalized Diabetes Diet Recommendation System with Knowledge Graph and Incremental Learning",
+      "key": "ding2025personalizeddiab8378"
+    },
+    {
+      "doi": "10.55041/ijsrem52628",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Personalized Diet Plan Recommendation based on Health Data",
+      "key": "kanabar2025personalizeddiet5f92"
+    },
+    {
+      "doi": "10.1109/iccca66364.2025.11325677",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "A Supervised Machine Learning-Based System for Diabetes Type Classification And Personalized Diet Recommendation",
+      "key": "khandelwal2025asupervisedmachic08c"
+    },
+    {
+      "doi": "10.1109/sceecs64059.2025.10940178",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Wellness AI: AI-Driven Personalized Diet and Fitness Recommendation",
+      "key": "kothari2025wellnessaiaidriv344e"
+    },
+    {
+      "doi": "10.5220/0013541000004664",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Application of Food Nutrient Composition Analysis and Computer Algorithm in Nutrition Recommendation System",
+      "key": "liu2025applicationoffoo9d8c"
+    },
+    {
+      "doi": "10.47392/irjaem.2025.0085",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "AI-Powered Fitness and Diet Recommendation System: A Personalized Approach to Health and Wellness",
+      "key": "samitabhandari2025aipoweredfitness4957"
+    },
+    {
+      "doi": "10.1109/giet65294.2025.11234748",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "Personalized Exercise and Diet Recommendation Using Machine Learning and Deep Learning",
+      "key": "senapati2025personalizedexerb349"
+    },
+    {
+      "doi": "10.5958/2231-0657.2025.00058.3",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "A Personalized Diet and Workout Recommendation System Using Generative AI: Integrating Lang Chain and Indian Knowledge Systems",
+      "key": "tiwari2025apersonalizeddieec3a"
+    },
+    {
+      "doi": "10.17148/iarjset.2025.12143",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "E Nurse – Student Health Risk Analysis and Personalized Evidence-based Diet Recommendation System with Machine Learning Techniques",
+      "key": "v2025enursestudenthea131f"
+    },
+    {
+      "doi": "10.1109/cisce65916.2025.11065817",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2025,
+      "title": "ACMO-Diet: Accelerated Constrained Multi-Objective Optimization for Diet Recommendation",
+      "key": "zhao2025acmodiet"
+    },
+    {
+      "doi": "10.1016/j.eswa.2023.122166",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2024,
+      "title": "A systematic review on food recommender systems",
+      "key": "bondevik2024asystematicrevie529d"
+    },
+    {
+      "doi": "10.1109/aiars63200.2024.00052",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2024,
+      "title": "Research on Multi-Objective Optimization Algorithm Based on Children's Diet Optimization",
+      "key": "chen2024researchonmultiob991"
+    },
+    {
+      "doi": "10.1590/0101-7438.2023.043.00285156",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2024,
+      "title": "MULTI-OBJECTIVE OPTIMIZATION APPLIED TO DIET PLANNING FOR PEOPLE WITH DIABETES",
+      "key": "soares2024multiobjectiveopd461"
+    },
+    {
+      "doi": "10.56726/irjmets32783",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2023,
+      "title": "A SURVEY ON PERSONALIZED DIET FOOD RECOMMENDATION SYSTEM",
+      "key": "anon2023asurveyonpersona7a32"
+    },
+    {
+      "doi": "10.31534/engmod.2023.1.ri.05a",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2023,
+      "title": "Multiobjective Optimization to Optimal Moroccan Diet Using Genetic Algorithm",
+      "key": "anon2023multiobjectiveop686a"
+    },
+    {
+      "doi": "10.56726/irjmets46490",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2023,
+      "title": "PERSONALIZED EXERCISE AND DIET PLAN RECOMMENDATION SYSTEM FOR GYM",
+      "key": "anon2023personalizedexerfeda"
+    },
+    {
+      "doi": "10.3390/computers13010001",
+      "schema": "crossref",
+      "cluster": "C_diet_moo_recommend",
+      "year": 2023,
+      "title": "Healthy Personalized Recipe Recommendations for Weekly Meal Planning",
+      "key": "zioutos2023healthypersonali659f"
+    },
+    {
+      "doi": "10.1145/3795101.3805427",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2026,
+      "title": "A Hybrid DE-PSO Algorithm for Constrained Optimization Problems with Distinct Constraint Handling",
+      "key": "fukuhara2026ahybriddepsoalgo1602"
+    },
+    {
+      "doi": "10.1016/j.swevo.2026.102303",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2026,
+      "title": "A multitype constraint handling evolutionary algorithm for constrained multiobjective optimization problems",
+      "key": "rao2026amultitypeconstrbd9e"
+    },
+    {
+      "doi": "10.1016/j.swevo.2025.102235",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2026,
+      "title": "A novel encoding/decoding algorithm for constraint handling in a horizontal-axis wind turbine blade optimization process",
+      "key": "sangounsak2026anovelencodingde09e2"
+    },
+    {
+      "doi": "10.70286/isu-01.04.2026.019",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2026,
+      "title": "COMPARATIVE ANALYSIS OF MODIFIED NSGA-III AND RVEA ALGORITHMS FOR MULTI-OBJECTIVE TRAFFIC DISTRIBUTION",
+      "key": "syvolovskyi2026comparativeanaly74d4"
+    },
+    {
+      "doi": "10.70314/is.2025.skui.3280",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2025,
+      "title": "Landscape-Aware Selection of Constraint Handling Techniquesin Multiobjective Optimisation",
+      "key": "anon2025landscapeawarese8d63"
+    },
+    {
+      "doi": "10.1109/tevc.2023.3281666",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2024,
+      "title": "Evolutionary Constrained Multiobjective Optimization: Scalable High-Dimensional Constraint Benchmarks and Algorithm",
+      "key": "qiao2024evolutionaryconsfb48"
+    },
+    {
+      "doi": "10.1117/12.3014412",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2024,
+      "title": "A dual population constrained multiobjective evolutionary algorithm with a feasible archive set",
+      "key": "yu2024adualpopulationc9fb6"
+    },
+    {
+      "doi": "10.1016/j.swevo.2023.101314",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2023,
+      "title": "SF-FWA: A Self-Adaptive Fast Fireworks Algorithm for effective large-scale optimization",
+      "key": "chen2023sffwaaselfadapti3e4b"
+    },
+    {
+      "doi": "10.1109/tevc.2023.3250552",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2023,
+      "title": "A First Runtime Analysis of the NSGA-II on a Multimodal Problem",
+      "key": "doerr2023afirstruntimeana3d85"
+    },
+    {
+      "doi": "10.1016/j.ins.2022.10.050",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2022,
+      "title": "A constrained multiobjective evolutionary algorithm with the two-archive weak cooperation",
+      "key": "li2022aconstrainedmultef18"
+    },
+    {
+      "doi": "10.23919/wac55640.2022.9934365",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2022,
+      "title": "Behavior Analysis of Constrained Multiobjective Evolutionary Algorithms using Scalable Constrained Multi-Modal Distance Minimization Problems",
+      "key": "yano2022behavioranalysis7a82"
+    },
+    {
+      "doi": "10.1109/iccia52886.2021.00016",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2021,
+      "title": "A Constrained Multiobjective Evolutionary Algorithm based on State Transition Strategy",
+      "key": "zheng2021aconstrainedmult861c"
+    },
+    {
+      "doi": "10.1109/tevc.2018.2855411",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2019,
+      "title": "Two-Archive Evolutionary Algorithm for Constrained Multiobjective Optimization",
+      "key": "li2019ctaea"
+    },
+    {
+      "doi": "10.12783/dtetr/eeta2017/7765",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2017,
+      "title": "A Constrained Multiobjective Evolutionary Algorithm Based on a Hybrid Constraint Handling Technique Using Population Trimming Strategy",
+      "key": "kan2017aconstrainedmult6073"
+    },
+    {
+      "doi": "10.1109/tevc.2016.2519378",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2016,
+      "title": "A Reference Vector Guided Evolutionary Algorithm for Many-Objective Optimization",
+      "key": "cheng2016"
+    },
+    {
+      "doi": "10.1109/tevc.2007.892759",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2007,
+      "title": "MOEA/D: A Multiobjective Evolutionary Algorithm Based on Decomposition",
+      "key": "zhang2007"
+    },
+    {
+      "doi": "10.1109/4235.996017",
+      "schema": "crossref",
+      "cluster": "D_moea_methods",
+      "year": 2002,
+      "title": "A fast and elitist multiobjective genetic algorithm: NSGA-II",
+      "key": "deb2002"
+    },
+    {
+      "doi": "10.3929/ethz-a-004284029",
+      "schema": "datacite",
+      "cluster": "D_moea_methods",
+      "year": 2001,
+      "title": "SPEA2: Improving the strength pareto evolutionary algorithm",
+      "key": "zitzler2001"
+    },
+    {
+      "doi": "10.1016/j.swevo.2026.102349",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2026,
+      "title": "A novel framework for generating tunable and scalable benchmark problems for multimodal multiobjective optimization",
+      "key": "ahrari2026anovelframeworkff84b"
+    },
+    {
+      "doi": "10.1162/evco.a.393",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2026,
+      "title": "A Dynamic Multiobjective Evolutionary Algorithm Using Dual-Space Prediction and Surrogate-Based Sampling",
+      "key": "liu2026adynamicmultiobjf726"
+    },
+    {
+      "doi": "10.1109/cec65147.2025.11043099",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2025,
+      "title": "Performance Study of Surrogate-Assisted Large-Scale Multiobjective Evolutionary Algorithms on GLSMOP Test Suite",
+      "key": "gu2025performancestudydfbe"
+    },
+    {
+      "doi": "10.1007/s10898-024-01387-z",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2024,
+      "title": "A surrogate-assisted a priori multiobjective evolutionary algorithm for constrained multiobjective optimization problems",
+      "key": "aghaeipour2024asurrogateassist16a9"
+    },
+    {
+      "doi": "10.1162/evco_a_00328",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2023,
+      "title": "Theoretical Analyses of Multiobjective Evolutionary Algorithms on Multimodal Objectives*",
+      "key": "zheng2023theoreticalanaly3651"
+    },
+    {
+      "doi": "10.1109/tevc.2020.3020046",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2021,
+      "title": "Realistic Constrained Multiobjective Optimization Benchmark Problems From Design",
+      "key": "picard2021realisticconstra4721"
+    },
+    {
+      "doi": "10.1109/tevc.2019.2906927",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2020,
+      "title": "Multifactorial Evolutionary Algorithm With Online Transfer Parameter Estimation: MFEA-II",
+      "key": "bali2020multifactorialev3081"
+    },
+    {
+      "doi": "10.5151/sigradi2020-21",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2020,
+      "title": "Generating architectural plan with evolutionary multiobjective optimization algorithms: a benchmark case with an existent construction system",
+      "key": "canestrino2020generatingarchit1cc9"
+    },
+    {
+      "doi": "10.1145/3205455.3205511",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2018,
+      "title": "Fast algorithm for fair comparison of genetic algorithms",
+      "key": "chen2018fastalgorithmfor2d80"
+    },
+    {
+      "doi": "10.1145/1830483.1830578",
+      "schema": "crossref",
+      "cluster": "E_benchmark_stats",
+      "year": 2010,
+      "title": "Indicator-based evolutionary algorithm with hypervolume approximation by achievement scalarizing functions",
+      "key": "ishibuchi2010indicatorbasedev9398"
+    },
+    {
+      "doi": "10.1016/j.ins.2026.123907",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2026,
+      "title": "A random forest-guided hybrid evolutionary framework for stochastic multiobjective knapsack problems",
+      "key": "bai2026arandomforestgui6cda"
+    },
+    {
+      "doi": "10.1109/tevc.2025.3570938",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2026,
+      "title": "Fast High-Diversity Subset Selection for Multiobjective Optimization by Riesz\n                    <i>s</i>\n                    -Energy",
+      "key": "falcncardona2026fasthighdiversitb480"
+    },
+    {
+      "doi": "10.1016/j.asoc.2026.116100",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2026,
+      "title": "Generative model-based evolutionary algorithm for solving large-scale sparse multi-objective optimization problems",
+      "key": "shao2026generativemodelb2427"
+    },
+    {
+      "doi": "10.1007/s40747-026-02409-x",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2026,
+      "title": "A heterogeneous population co-evolutionary algorithm for sparse large-scale multi-objective optimization problems",
+      "key": "wang2026aheterogeneouspoba62"
+    },
+    {
+      "doi": "10.1109/cec65147.2025.11043020",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2025,
+      "title": "An Adaptive Multi-Granular Pareto-Optimal Subspace Learning Algorithm for Sparse Large-Scale Multi-Objective Optimization",
+      "key": "sun2025anadaptivemultig72fe"
+    },
+    {
+      "doi": "10.1016/j.swevo.2024.101820",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2025,
+      "title": "A sparse large-scale multi-objective evolutionary algorithm based on sparsity detection",
+      "key": "yang2025asparselargescal6a1f"
+    },
+    {
+      "doi": "10.1109/tevc.2023.3261134",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2024,
+      "title": "Subset Selection for Evolutionary Multiobjective Optimization",
+      "key": "gu2024subsetselectionf5654"
+    },
+    {
+      "doi": "10.70023/piqm242",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2024,
+      "title": "The Evolutionary Algorithm Based on Pattern Mining for Large Sparse Multi-Objective Optimization Problems",
+      "key": "jarrah2024theevolutionarya33da"
+    },
+    {
+      "doi": "10.1016/j.swevo.2024.101606",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2024,
+      "title": "Deep reinforcement learning assisted automated guiding vector selection for large-scale sparse multi-objective optimization",
+      "key": "shao2024deepreinforcemen5816"
+    },
+    {
+      "doi": "10.1016/j.knosys.2023.110361",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2023,
+      "title": "Feature subset selection using multimodal multiobjective differential evolution",
+      "key": "agrawal2023featuresubsetsel01aa"
+    },
+    {
+      "doi": "10.1162/evco_a_00320",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2023,
+      "title": "Evolutionary and Estimation of Distribution Algorithms for Unconstrained, Constrained, and Multiobjective Noisy Combinatorial Optimisation Problems",
+      "key": "aishwaryaprajna2023evolutionaryande6e82"
+    },
+    {
+      "doi": "10.1007/s00500-023-08825-2",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2023,
+      "title": "An evolutionary algorithm based on rank-1 approximation for sparse large-scale multi-objective problems",
+      "key": "chen2023anevolutionaryal105f"
+    },
+    {
+      "doi": "10.1145/3583133.3596405",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2023,
+      "title": "Adaptive Landscape-aware Constraint Handling with Application to Binary Knapsack Problem",
+      "key": "liefooghe2023adaptivelandscapdb6a"
+    },
+    {
+      "doi": "10.1109/ssci51031.2022.10022173",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2022,
+      "title": "An adaptive fitness evolutionary algorithm for sparse large-scale multi-objective optimization problems",
+      "key": "zhang2022anadaptivefitnesd847"
+    },
+    {
+      "doi": "10.5220/0010145501000111",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2020,
+      "title": "Evolutionary Large-scale Sparse Multi-objective Optimization for Collaborative Edge-cloud Computation Offloading",
+      "key": "peng2020evolutionarylargbe4d"
+    },
+    {
+      "doi": "10.1109/tevc.2019.2918140",
+      "schema": "crossref",
+      "cluster": "F_sparse_large_combo",
+      "year": 2020,
+      "title": "An Evolutionary Algorithm for Large-Scale Sparse Multiobjective Optimization Problems",
+      "key": "tian2020anevolutionaryalaac9"
+    },
+    {
+      "doi": "10.1016/j.jfca.2026.109228",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2026,
+      "title": "Development of a food composition database for nutrient analysis of dietary intake among older Indians: The LASI-DAD diet study",
+      "key": "logan2026developmentofafo744d"
+    },
+    {
+      "doi": "10.6084/m9.figshare.30153778",
+      "schema": "datacite",
+      "cluster": "G_nutrition_data",
+      "year": 2026,
+      "title": "DMP4P: A Daily Meal Plan Dataset for Individuals with Chronic Conditions",
+      "key": "zhao2026dmp4p"
+    },
+    {
+      "doi": "10.56669/nxzd4541",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Thailand)",
+      "key": "anon2025qualityimproveme08d5"
+    },
+    {
+      "doi": "10.56669/nytf8306",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Indonesia)",
+      "key": "anon2025qualityimproveme17c5"
+    },
+    {
+      "doi": "10.56669/admt3040",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Philippines)",
+      "key": "anon2025qualityimproveme5091"
+    },
+    {
+      "doi": "10.56669/hrjc1257",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Cambodia)",
+      "key": "anon2025qualityimproveme6189"
+    },
+    {
+      "doi": "10.56669/wdhm7464",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Nepal)",
+      "key": "anon2025qualityimproveme8780"
+    },
+    {
+      "doi": "10.56669/vztk8546",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Bhutan)",
+      "key": "anon2025qualityimproveme9dfa"
+    },
+    {
+      "doi": "10.56669/nlcm9358",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Vietnam)",
+      "key": "anon2025qualityimprovemee599"
+    },
+    {
+      "doi": "10.56669/wqkl6955",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Quality Improvement of Asian Food Composition Database(Bangladesh",
+      "key": "anon2025qualityimprovemef38a"
+    },
+    {
+      "doi": "10.1016/j.jfca.2025.108167",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2025,
+      "title": "Food and Nutrient Database for Dietary Studies 2021‐2023: Enhancements to support national dietary surveillance",
+      "key": "morton2025foodandnutrientd7efc"
+    },
+    {
+      "doi": "10.1016/j.cdnut.2024.103157",
+      "schema": "crossref",
+      "cluster": "G_nutrition_data",
+      "year": 2024,
+      "title": "A Food and Nutrient Database for Dietary Studies (FNDDS) Tailored to Hawaii May Reduce Dietary Assessment Error",
+      "key": "lozano2024afoodandnutrient83d6"
+    },
+    {
+      "doi": "10.31577/cai_2026_3_513",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2026,
+      "title": "Multiobjective Memetic Algorithm for the Markowitz Model Based on Informed Decisions",
+      "key": "colominedurn2026multiobjectivemefc01"
+    },
+    {
+      "doi": "10.1145/3712255.3726688",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2025,
+      "title": "A Simple Combination of Local Search and MOEAD for Combinatorial Multi-objective Optimization",
+      "key": "derbel2025asimplecombinatia389"
+    },
+    {
+      "doi": "10.1007/s12065-025-01088-w",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2025,
+      "title": "A new ant stridulation-based local search for combinatorial optimization problems",
+      "key": "sammoud2025anewantstridulat139b"
+    },
+    {
+      "doi": "10.1109/cec60901.2024.10611916",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2024,
+      "title": "A Random Forest-Assisted Local Search for Expensive Permutation-based Combinatorial Optimization Problems",
+      "key": "ikeguchi2024arandomforestass0cdd"
+    },
+    {
+      "doi": "10.1145/3638529.3654077",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2024,
+      "title": "Empirical Comparison between MOEAs and Local Search on Multi-Objective Combinatorial Optimisation Problems",
+      "key": "li2024empiricalcompari3898"
+    },
+    {
+      "doi": "10.1007/s12293-022-00354-z",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2022,
+      "title": "A particle swarm optimization based multiobjective memetic algorithm for high-dimensional feature selection",
+      "key": "luo2022aparticleswarmop3ced"
+    },
+    {
+      "doi": "10.1145/3512290.3528732",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2022,
+      "title": "An improved Pareto front modeling algorithm for large-scale many-objective optimization",
+      "key": "panichella2022animprovedpareto1d8f"
+    },
+    {
+      "doi": "10.1109/cec.2019.8789969",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2019,
+      "title": "Multiobjective memetic algorithm for vital nodes identification in complex networks",
+      "key": "luo2019multiobjectiveme5f98"
+    },
+    {
+      "doi": "10.1145/3321707.3321839",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2019,
+      "title": "An adaptive evolutionary algorithm based on non-euclidean geometry for many-objective optimization",
+      "key": "panichella2019anadaptiveevolut97b2"
+    },
+    {
+      "doi": "10.1109/cec.2019.8790210",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2019,
+      "title": "An Effective Memetic Algorithm for Resource Constrained Project Scheduling Problem",
+      "key": "rahman2019aneffectivememet26b9"
+    },
+    {
+      "doi": "10.1093/bioinformatics/btv063",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2015,
+      "title": "A multiobjective memetic algorithm for PPI network alignment",
+      "key": "clark2015amultiobjectivemb9a2"
+    },
+    {
+      "doi": "10.1109/icnc.2015.7378012",
+      "schema": "crossref",
+      "cluster": "I_memetic_repair",
+      "year": 2015,
+      "title": "An opposition-based repair operator for multi-objective evolutionary algorithm in constrained optimization problems",
+      "key": "zhunfan2015anoppositionbasec800"
+    },
+    {
+      "doi": "10.1109/cec.2014.6900487",
+      "cluster": "E_benchmark_stats",
+      "year": 2014,
+      "title": "Evolutionary multiobjective optimization in dynamic environments: A set of novel benchmark functions",
+      "key": "biswas2014evolutionarymult7867",
+      "schema": "crossref"
+    },
+    {
+      "doi": "10.1145/3205651.3205754",
+      "cluster": "E_benchmark_stats",
+      "year": 2018,
+      "title": "Benchmarking multiobjective evolutionary algorithms and constraint handling techniques on a real-world car structure design optimization benchmark problem",
+      "key": "fukumoto2018benchmarkingmult8651",
+      "schema": "crossref"
+    },
+    {
+      "doi": "10.1162/evco_a_00299",
+      "cluster": "E_benchmark_stats",
+      "year": 2022,
+      "title": "VSD-MOEA: A Dominance-Based Multiobjective Evolutionary Algorithm with Explicit Variable Space Diversity Management",
+      "key": "castillo2022vsdmoeaadominanc0c6f",
+      "schema": "crossref"
+    },
+    {
+      "doi": "10.1109/cec.2010.5586241",
+      "cluster": "E_benchmark_stats",
+      "year": 2010,
+      "title": "Benchmarking evolutionary multiobjective optimization algorithms",
+      "key": "mersmann2010benchmarkingevol3696",
+      "schema": "crossref"
+    }
+  ]
+}
