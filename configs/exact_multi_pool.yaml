@@ -1,0 +1,11 @@
+pool_sizes: [250, 500, 1000]
+candidate_limit: 300
+time_limit: 60
+min_foods: 5
+max_foods: 15
+has_meal_constraint: true
+targets_total: 12
+targets_file: data/representative_targets.csv
+seed: 42
+output_dir: results/raw
+output_name: exact_multi_pool.csv

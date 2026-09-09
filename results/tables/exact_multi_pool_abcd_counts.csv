@@ -1,0 +1,4 @@
+pool_size,A_suggestive_feas_oracle_zero_algo_FHR,B_suggestive_feas_oracle_positive_algo_FHR,C_proven_infeasible_reduced_pool
+250,5,4,3
+500,4,4,4
+1000,6,4,2

@@ -1,0 +1,4 @@
+pool_size,proven_feasible,proven_infeasible
+250,9,3
+500,8,4
+1000,10,2

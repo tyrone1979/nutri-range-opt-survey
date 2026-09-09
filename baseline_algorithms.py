@@ -4,6 +4,21 @@ warnings.filterwarnings('ignore')
 np.random.seed(42)
 
 
+def _safe_card_randint(min_foods: int, max_foods: int, n_pool: int) -> int:
+    """Sample a cardinality in [min_foods, max_foods] ∩ [1, n_pool].
+
+    Guards against numpy ``ValueError: low >= high`` when the unique parent
+    pool is smaller than ``min_foods`` (degenerate crossover unions).
+    """
+    hi = min(int(max_foods), int(n_pool))
+    lo = min(int(min_foods), hi)
+    if hi < 1:
+        return 1 if n_pool >= 1 else 0
+    if lo >= hi:
+        return hi
+    return int(np.random.randint(lo, hi + 1))
+
+
 # ============================================================
 # 4. BMOEA (Baseline)
 # ============================================================
@@ -30,7 +45,7 @@ class BMOEA:
         n_valid = len(self.all_valid_idx)
         population = []
         for _ in range(pop_size):
-            n_items = np.random.randint(min_foods, min(max_foods, n_valid) + 1)
+            n_items = _safe_card_randint(min_foods, max_foods, n_valid)
             selected = np.random.choice(self.all_valid_idx, size=n_items, replace=False)
             population.append(selected)
 
@@ -90,7 +105,7 @@ class BMOEA:
             for i in range(elite_size, pop_size - 1, 2):
                 if np.random.random() < crossover_rate:
                     combined = np.unique(np.concatenate([population[i], population[i + 1]]))
-                    n_target = np.random.randint(min_foods, min(max_foods, len(combined)) + 1)
+                    n_target = _safe_card_randint(min_foods, max_foods, len(combined))
                     population[i] = np.random.choice(combined, size=n_target, replace=False)
 
             for i in range(pop_size):
@@ -161,7 +176,7 @@ class ACMODiet:
             if np.random.random() < 0.7:
                 ind = random_individual(self.all_valid_idx, self.meal_tags)
             else:
-                n_items = np.random.randint(min_foods, min(max_foods, len(self.all_valid_idx)) + 1)
+                n_items = _safe_card_randint(min_foods, max_foods, len(self.all_valid_idx))
                 ind = np.random.choice(self.all_valid_idx, size=n_items, replace=False)
             if ind is None:
                 ind = np.random.choice(self.all_valid_idx, min_foods, replace=False)
@@ -288,7 +303,7 @@ class MemeticAlgorithm:
         n_valid = len(self.all_valid_idx)
         population = []
         for _ in range(pop_size):
-            n_items = np.random.randint(min_foods, min(max_foods, n_valid) + 1)
+            n_items = _safe_card_randint(min_foods, max_foods, n_valid)
             selected = np.random.choice(self.all_valid_idx, size=n_items, replace=False)
             population.append(selected)
 
@@ -373,7 +388,7 @@ class MemeticAlgorithm:
             for i in range(elite_size, pop_size - 1, 2):
                 if np.random.random() < 0.3:
                     combined = np.unique(np.concatenate([population[i], population[i + 1]]))
-                    n_target = np.random.randint(min_foods, min(max_foods, len(combined)) + 1)
+                    n_target = _safe_card_randint(min_foods, max_foods, len(combined))
                     population[i] = np.random.choice(combined, size=n_target, replace=False)
 
             for i in range(pop_size):
@@ -658,11 +673,26 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
         if algo_name == 'NSGA2':
             algorithm = NSGA2(pop_size=pop_size, sampling=sampling, crossover=crossover, mutation=mutation)
         elif algo_name == 'NSGA3':
-            algorithm = NSGA3(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling,
+            # Match requested population when possible (m=2: n_partitions = pop_size - 1)
+            nsga3_dirs = get_reference_directions(
+                "das-dennis", 2, n_partitions=max(int(pop_size) - 1, 1)
+            )
+            algorithm = NSGA3(ref_dirs=nsga3_dirs, pop_size=pop_size, sampling=sampling,
                               crossover=crossover, mutation=mutation)
         elif algo_name == 'MOEAD':
-            algorithm = MOEAD(ref_dirs=ref_dirs, n_neighbors=20, sampling=sampling,
-                              crossover=crossover, mutation=mutation, prob_neighbor_mating=0.7)
+            # Fair-budget contract: population equals number of weight vectors.
+            # For bi-objective Das-Dennis, n_partitions = pop_size - 1 yields exactly pop_size directions.
+            moead_dirs = get_reference_directions(
+                "das-dennis", 2, n_partitions=max(int(pop_size) - 1, 1)
+            )
+            algorithm = MOEAD(
+                ref_dirs=moead_dirs,
+                n_neighbors=min(20, len(moead_dirs)),
+                sampling=sampling,
+                crossover=crossover,
+                mutation=mutation,
+                prob_neighbor_mating=0.7,
+            )
         elif algo_name == 'RVEA':
             algorithm = RVEA(ref_dirs=ref_dirs, pop_size=pop_size, sampling=sampling,
                              crossover=crossover, mutation=mutation)
@@ -677,8 +707,11 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
         else:
             return default_result
 
-        # Generations capped by eval budget
-        max_gen_by_budget = max(1, int(np.ceil(max_evals / max(pop_size, 1))))
+        # Generations capped by eval budget; for MOEAD, pop size == len(ref_dirs)
+        effective_pop = pop_size
+        if algo_name == 'MOEAD':
+            effective_pop = max(len(moead_dirs), 1)
+        max_gen_by_budget = max(1, int(np.ceil(max_evals / max(effective_pop, 1))))
         n_generations = min(n_generations, max_gen_by_budget)
         algorithm.setup(problem, termination=('n_gen', n_generations), seed=int(seed))
 
@@ -692,7 +725,14 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
             if n_evals >= max_evals:
                 break
             algorithm.next()
-            n_evals += pop_size
+            # Count objective evaluations by current population size (fair-budget currency)
+            step_pop = effective_pop
+            if algorithm.pop is not None:
+                try:
+                    step_pop = len(algorithm.pop)
+                except Exception:
+                    step_pop = effective_pop
+            n_evals += step_pop
 
             if algorithm.pop is not None:
                 feas_in_current_gen = 0

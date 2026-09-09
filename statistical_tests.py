@@ -26,37 +26,51 @@ def friedman_test(results_matrix):
     return stat, p
 
 # ---------- 2. Wilcoxon 符号秩检验（两两对比） ----------
-def wilcoxon_pairwise(results_matrix, algorithm_names):
+def wilcoxon_pairwise(results_matrix, algorithm_names, alpha=0.05, holm=True):
     """
-    对每对算法做Wilcoxon检验
-    返回: 字典 {(alg_i, alg_j): (statistic, p_value, effect_size)}
+    Pairwise Wilcoxon signed-rank tests with optional Holm family-wise correction.
+    Returns: dict {(alg_i, alg_j): {statistic, p_value, p_holm, effect_size_r, significant}}
     """
     from scipy.stats import wilcoxon
     n_algs = results_matrix.shape[1]
     results = {}
 
     for i in range(n_algs):
-        for j in range(i+1, n_algs):
-            # 计算差值
+        for j in range(i + 1, n_algs):
             diff = results_matrix[:, i] - results_matrix[:, j]
-            # 只保留非零差值
             nonzero = diff != 0
             if np.sum(nonzero) < 5:
                 continue
 
             stat, p = wilcoxon(diff[nonzero])
-
-            # 计算效应量 (r = Z / sqrt(N))
-            z = stats.norm.ppf(1 - p/2) if p < 1 else 0
+            z = stats.norm.ppf(1 - p / 2) if p < 1 else 0
             n = np.sum(nonzero)
             r = z / np.sqrt(n) if n > 0 else 0
 
             results[(algorithm_names[i], algorithm_names[j])] = {
-                'statistic': stat,
-                'p_value': p,
-                'effect_size_r': r,
-                'significant': p < 0.05
+                "statistic": stat,
+                "p_value": p,
+                "p_holm": p,  # filled below
+                "effect_size_r": r,
+                "significant": p < alpha,
             }
+
+    if holm and results:
+        items = sorted(results.items(), key=lambda kv: kv[1]["p_value"])
+        m = len(items)
+        adj = []
+        for rank, (key, val) in enumerate(items, start=1):
+            p_adj = min(1.0, val["p_value"] * (m - rank + 1))
+            adj.append((key, p_adj))
+        # enforce monotonicity
+        running = 0.0
+        mono = []
+        for key, p_adj in reversed(adj):
+            running = max(running, p_adj)
+            mono.append((key, running))
+        for key, p_adj in reversed(mono):
+            results[key]["p_holm"] = p_adj
+            results[key]["significant"] = p_adj < alpha
 
     return results
 

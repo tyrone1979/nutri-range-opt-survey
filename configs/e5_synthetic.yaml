@@ -1,0 +1,25 @@
+# Compact synthetic external-validity design (not a second paper)
+experiment: e5_synthetic
+result_class: SYNTHETIC
+seed: 42
+population_size: 500
+max_evaluations: 100000
+max_generations: 10000
+early_stop_feasible: null
+repeats: 5
+instances_per_cell: 1
+structure_primary: sparse
+N_list: [5000, 10000, 25000]
+dims: [6, 12]
+width_factors: [0.5, 1.0, 1.5]
+algorithms:
+  - MA
+  - NSGA2
+  - BMOEA
+  - SPEA2
+  - RandomRepair
+  - Random
+output_dir: results/raw
+log_dir: results/logs
+output_name: e5_synthetic.csv
+workers: 8

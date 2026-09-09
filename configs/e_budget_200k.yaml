@@ -1,0 +1,28 @@
+experiment: e_budget
+result_class: BUDGET_SENSITIVITY
+seed: 42
+population_size: 500
+max_generations: 10000
+early_stop_feasible: null
+targets_total: 12
+repeats: 10
+targets_file: data/representative_targets.csv
+sparsity_factor: 0.5
+cap_samples: 600
+cap_percentile: 99.0
+evaluation_budgets: [200000]
+algorithms:
+  - MA
+  - ACMO-Diet
+  - BMOEA
+  - NSGA2
+  - RandomRepair
+  - Random
+scales:
+  - dataset: nhanes_sample
+    size: 10000
+    label: "NHANES-10K"
+output_dir: results/raw
+log_dir: results/logs
+output_name: e_budget_200k.csv
+workers: 16
