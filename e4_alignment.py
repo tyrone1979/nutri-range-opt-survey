@@ -46,16 +46,22 @@ def load_all_experiments():
     dfs = {}
 
     for exp_name, filename in [
-        ('scaling', 'e1_scaling.csv'),
-        ('sparsity', 'e2_sparsity.csv'),
-        ('dimension', 'e3_dimension.csv'),
+        ('scaling', 'e1_scaling_full.csv'),
+        ('sparsity', 'e2_sparsity_full.csv'),
+        ('dimension', 'e3_dimension_full.csv'),
     ]:
         path = os.path.join(INPUT_DIR, filename)
         if os.path.exists(path):
             df = pd.read_csv(path)
+            # E1: analyze NHANES scaling axis separately from recipe catalogs
+            if exp_name == 'scaling' and 'dataset' in df.columns:
+                n0 = len(df)
+                df = df[df['dataset'].astype(str).str.startswith('nhanes')].copy()
+                print(f"  Loaded {exp_name}: {len(df)} NHANES rows (dropped {n0 - len(df)} recipe rows)")
+            else:
+                print(f"  Loaded {exp_name}: {len(df)} rows")
             df['experiment'] = exp_name
             dfs[exp_name] = df
-            print(f"  Loaded {exp_name}: {len(df)} rows")
         else:
             print(f"  [WARNING] {path} not found, skipping {exp_name}")
 

@@ -1,0 +1,13 @@
+{
+  "input": "results/raw/e2_sparsity_full.csv",
+  "n_rows": 3600,
+  "n_targets": 12,
+  "n_algos": 10,
+  "factors": [
+    0.5,
+    1.0,
+    1.5
+  ],
+  "repeats": 10,
+  "result_class": "PRIMARY"
+}

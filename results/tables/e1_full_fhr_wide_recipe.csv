@@ -1,0 +1,3 @@
+dataset,ACMO-Diet,BMOEA,CTAEA,Greedy,MA,NSGA2,RVEA,Random,RandomRepair,SPEA2
+allrecipes,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+foods_com,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0

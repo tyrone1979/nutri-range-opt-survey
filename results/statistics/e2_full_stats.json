@@ -1,0 +1,644 @@
+{
+  "0.5": {
+    "algorithms": [
+      "ACMO-Diet",
+      "BMOEA",
+      "CTAEA",
+      "Greedy",
+      "MA",
+      "NSGA2",
+      "RVEA",
+      "Random",
+      "RandomRepair",
+      "SPEA2"
+    ],
+    "n_targets": 12,
+    "friedman": {
+      "stat": 26.330973451327388,
+      "p": 0.0018030747447059282
+    },
+    "nemenyi": {
+      "mean_ranks": {
+        "ACMO-Diet": 1.5833333333333333,
+        "BMOEA": 2.5,
+        "CTAEA": 4.416666666666667,
+        "Greedy": 4.833333333333333,
+        "MA": 3.9166666666666665,
+        "NSGA2": 5.166666666666667,
+        "RVEA": 7.25,
+        "Random": 8.416666666666666,
+        "RandomRepair": 7.833333333333333,
+        "SPEA2": 9.083333333333334
+      },
+      "critical_difference": 3.910808668861779,
+      "significant_pairs": [
+        {
+          "a": "ACMO-Diet",
+          "b": "RVEA",
+          "rank_diff": 5.666666666666667,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "Random",
+          "rank_diff": 6.833333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "RandomRepair",
+          "rank_diff": 6.25,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "SPEA2",
+          "rank_diff": 7.500000000000001,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "RVEA",
+          "rank_diff": 4.75,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "Random",
+          "rank_diff": 5.916666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "RandomRepair",
+          "rank_diff": 5.333333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "SPEA2",
+          "rank_diff": 6.583333333333334,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "CTAEA",
+          "b": "Random",
+          "rank_diff": 3.999999999999999,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "CTAEA",
+          "b": "SPEA2",
+          "rank_diff": 4.666666666666667,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "Greedy",
+          "b": "SPEA2",
+          "rank_diff": 4.250000000000001,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "MA",
+          "b": "Random",
+          "rank_diff": 4.5,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "MA",
+          "b": "RandomRepair",
+          "rank_diff": 3.9166666666666665,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "MA",
+          "b": "SPEA2",
+          "rank_diff": 5.166666666666668,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "NSGA2",
+          "b": "SPEA2",
+          "rank_diff": 3.916666666666667,
+          "cd": 3.910808668861779
+        }
+      ]
+    },
+    "wilcoxon": {
+      "CTAEA__MA": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      },
+      "MA__Random": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      }
+    },
+    "mean_ranks": {
+      "ACMO-Diet": 1.5833333333333333,
+      "BMOEA": 2.5,
+      "CTAEA": 4.416666666666667,
+      "Greedy": 4.833333333333333,
+      "MA": 3.9166666666666665,
+      "NSGA2": 5.166666666666667,
+      "RVEA": 7.25,
+      "Random": 8.416666666666666,
+      "RandomRepair": 7.833333333333333,
+      "SPEA2": 9.083333333333334
+    }
+  },
+  "1.0": {
+    "algorithms": [
+      "ACMO-Diet",
+      "BMOEA",
+      "CTAEA",
+      "Greedy",
+      "MA",
+      "NSGA2",
+      "RVEA",
+      "Random",
+      "RandomRepair",
+      "SPEA2"
+    ],
+    "n_targets": 12,
+    "friedman": {
+      "stat": 60.358993902439025,
+      "p": 1.1431999309253323e-09
+    },
+    "nemenyi": {
+      "mean_ranks": {
+        "ACMO-Diet": 1.25,
+        "BMOEA": 2.8333333333333335,
+        "CTAEA": 7.083333333333333,
+        "Greedy": 6.833333333333333,
+        "MA": 3.8333333333333335,
+        "NSGA2": 3.6666666666666665,
+        "RVEA": 6.416666666666667,
+        "Random": 9.0,
+        "RandomRepair": 7.25,
+        "SPEA2": 6.833333333333333
+      },
+      "critical_difference": 3.910808668861779,
+      "significant_pairs": [
+        {
+          "a": "ACMO-Diet",
+          "b": "CTAEA",
+          "rank_diff": 5.833333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "Greedy",
+          "rank_diff": 5.583333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "RVEA",
+          "rank_diff": 5.166666666666667,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "Random",
+          "rank_diff": 7.75,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "RandomRepair",
+          "rank_diff": 6.0,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "SPEA2",
+          "rank_diff": 5.583333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "CTAEA",
+          "rank_diff": 4.25,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "Greedy",
+          "rank_diff": 3.9999999999999996,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "Random",
+          "rank_diff": 6.166666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "RandomRepair",
+          "rank_diff": 4.416666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "SPEA2",
+          "rank_diff": 3.9999999999999996,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "MA",
+          "b": "Random",
+          "rank_diff": 5.166666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "NSGA2",
+          "b": "Random",
+          "rank_diff": 5.333333333333334,
+          "cd": 3.910808668861779
+        }
+      ]
+    },
+    "wilcoxon": {
+      "ACMO-Diet__CTAEA": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "ACMO-Diet__Greedy": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "ACMO-Diet__RVEA": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "ACMO-Diet__Random": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "ACMO-Diet__RandomRepair": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      },
+      "ACMO-Diet__SPEA2": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      },
+      "BMOEA__CTAEA": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "BMOEA__Greedy": {
+        "statistic": 3.5,
+        "p_value": 0.0234375,
+        "effect_size_r": 0.7554089364032176,
+        "significant": true
+      },
+      "BMOEA__RVEA": {
+        "statistic": 2.5,
+        "p_value": 0.03125,
+        "effect_size_r": 0.761509700998478,
+        "significant": true
+      },
+      "BMOEA__Random": {
+        "statistic": 2.0,
+        "p_value": 0.005859375,
+        "effect_size_r": 0.8713810644023898,
+        "significant": true
+      },
+      "BMOEA__RandomRepair": {
+        "statistic": 4.0,
+        "p_value": 0.21875,
+        "effect_size_r": 0.5020877359621803,
+        "significant": false
+      },
+      "BMOEA__SPEA2": {
+        "statistic": 5.0,
+        "p_value": 0.28125,
+        "effect_size_r": 0.43989388819239444,
+        "significant": false
+      },
+      "CTAEA__Greedy": {
+        "statistic": 15.0,
+        "p_value": 0.7265625,
+        "effect_size_r": 0.12363825834306261,
+        "significant": false
+      },
+      "CTAEA__MA": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "CTAEA__NSGA2": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "CTAEA__RVEA": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "CTAEA__Random": {
+        "statistic": 5.0,
+        "p_value": 0.078125,
+        "effect_size_r": 0.6228445466917063,
+        "significant": false
+      },
+      "CTAEA__RandomRepair": {
+        "statistic": 3.0,
+        "p_value": 0.015625,
+        "effect_size_r": 0.8058530054121684,
+        "significant": true
+      },
+      "CTAEA__SPEA2": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "Greedy__MA": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "Greedy__NSGA2": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "Greedy__RVEA": {
+        "statistic": 3.5,
+        "p_value": 0.046875,
+        "effect_size_r": 0.7026618676301368,
+        "significant": true
+      },
+      "Greedy__Random": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "Greedy__RandomRepair": {
+        "statistic": 1.0,
+        "p_value": 0.03125,
+        "effect_size_r": 0.8140881136688488,
+        "significant": true
+      },
+      "Greedy__SPEA2": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "MA__RVEA": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "MA__Random": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "MA__RandomRepair": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      },
+      "MA__SPEA2": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      },
+      "NSGA2__RVEA": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "NSGA2__Random": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "NSGA2__RandomRepair": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      },
+      "NSGA2__SPEA2": {
+        "statistic": 0.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.8330390158819877,
+        "significant": false
+      },
+      "RVEA__Random": {
+        "statistic": 1.5,
+        "p_value": 0.005859375,
+        "effect_size_r": 0.8713810644023898,
+        "significant": true
+      },
+      "RVEA__RandomRepair": {
+        "statistic": 17.0,
+        "p_value": 0.9375,
+        "effect_size_r": 0.027722974386391007,
+        "significant": false
+      },
+      "RVEA__SPEA2": {
+        "statistic": 1.0,
+        "p_value": 0.0625,
+        "effect_size_r": 0.7604571004674484,
+        "significant": false
+      },
+      "Random__RandomRepair": {
+        "statistic": 0.0,
+        "p_value": 0.0078125,
+        "effect_size_r": 0.9404758727365695,
+        "significant": true
+      },
+      "Random__SPEA2": {
+        "statistic": 0.0,
+        "p_value": 0.00390625,
+        "effect_size_r": 0.9618783041422524,
+        "significant": true
+      },
+      "RandomRepair__SPEA2": {
+        "statistic": 1.5,
+        "p_value": 0.1875,
+        "effect_size_r": 0.5894323922912406,
+        "significant": false
+      }
+    },
+    "mean_ranks": {
+      "ACMO-Diet": 1.25,
+      "BMOEA": 2.8333333333333335,
+      "CTAEA": 7.083333333333333,
+      "Greedy": 6.833333333333333,
+      "MA": 3.8333333333333335,
+      "NSGA2": 3.6666666666666665,
+      "RVEA": 6.416666666666667,
+      "Random": 9.0,
+      "RandomRepair": 7.25,
+      "SPEA2": 6.833333333333333
+    }
+  },
+  "1.5": {
+    "algorithms": [
+      "ACMO-Diet",
+      "BMOEA",
+      "CTAEA",
+      "Greedy",
+      "MA",
+      "NSGA2",
+      "RVEA",
+      "Random",
+      "RandomRepair",
+      "SPEA2"
+    ],
+    "n_targets": 12,
+    "friedman": {
+      "stat": 22.82432432432435,
+      "p": 0.0066031487984088
+    },
+    "nemenyi": {
+      "mean_ranks": {
+        "ACMO-Diet": 1.0,
+        "BMOEA": 2.0,
+        "CTAEA": 4.833333333333333,
+        "Greedy": 4.666666666666667,
+        "MA": 4.666666666666667,
+        "NSGA2": 5.5,
+        "RVEA": 7.083333333333333,
+        "Random": 8.166666666666666,
+        "RandomRepair": 8.166666666666666,
+        "SPEA2": 8.916666666666666
+      },
+      "critical_difference": 3.910808668861779,
+      "significant_pairs": [
+        {
+          "a": "ACMO-Diet",
+          "b": "NSGA2",
+          "rank_diff": 4.5,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "RVEA",
+          "rank_diff": 6.083333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "Random",
+          "rank_diff": 7.166666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "RandomRepair",
+          "rank_diff": 7.166666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "ACMO-Diet",
+          "b": "SPEA2",
+          "rank_diff": 7.916666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "RVEA",
+          "rank_diff": 5.083333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "Random",
+          "rank_diff": 6.166666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "RandomRepair",
+          "rank_diff": 6.166666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "BMOEA",
+          "b": "SPEA2",
+          "rank_diff": 6.916666666666666,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "CTAEA",
+          "b": "SPEA2",
+          "rank_diff": 4.083333333333333,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "Greedy",
+          "b": "SPEA2",
+          "rank_diff": 4.249999999999999,
+          "cd": 3.910808668861779
+        },
+        {
+          "a": "MA",
+          "b": "SPEA2",
+          "rank_diff": 4.249999999999999,
+          "cd": 3.910808668861779
+        }
+      ]
+    },
+    "wilcoxon": {
+      "CTAEA__Random": {
+        "statistic": 5.0,
+        "p_value": 0.625,
+        "effect_size_r": 0.21858745621015696,
+        "significant": false
+      }
+    },
+    "mean_ranks": {
+      "ACMO-Diet": 1.0,
+      "BMOEA": 2.0,
+      "CTAEA": 4.833333333333333,
+      "Greedy": 4.666666666666667,
+      "MA": 4.666666666666667,
+      "NSGA2": 5.5,
+      "RVEA": 7.083333333333333,
+      "Random": 8.166666666666666,
+      "RandomRepair": 8.166666666666666,
+      "SPEA2": 8.916666666666666
+    }
+  }
+}
