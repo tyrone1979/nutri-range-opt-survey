@@ -12,7 +12,8 @@ from typing import Optional, Sequence, Tuple
 import numpy as np
 
 # Treat U >= this as "effectively unbounded" sentinel
-UNBOUNDED_THRESHOLD = 1.0e5
+# Source targets use both 99,999 and 9,999,999 as one-sided sentinels.
+UNBOUNDED_THRESHOLD = 99_999.0
 
 
 def is_unbounded(upper: np.ndarray, threshold: float = UNBOUNDED_THRESHOLD) -> np.ndarray:

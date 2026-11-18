@@ -15,11 +15,10 @@ width_factors: [0.5, 1.0, 1.5]
 algorithms:
   - MA
   - NSGA2
-  - BMOEA
   - SPEA2
   - RandomRepair
   - Random
 output_dir: results/raw
 log_dir: results/logs
-output_name: e5_synthetic.csv
+output_name: e5_synthetic_corrected.csv
 workers: 8

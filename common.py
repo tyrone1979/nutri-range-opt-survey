@@ -157,7 +157,12 @@ def evaluate_batch(population, matrix, target_array, col_idx, meal_tags, max_cat
     return scores, feasibles, diversities, n_foods_arr, contrib_diversities
 
 
-def random_individual(all_valid_idx, meal_tags):
+def random_individual(
+    all_valid_idx,
+    meal_tags,
+    min_foods=MIN_FOODS,
+    max_foods=MAX_FOODS,
+):
     b_idx = all_valid_idx[meal_tags[all_valid_idx] == 0]
     l_idx = all_valid_idx[meal_tags[all_valid_idx] == 1]
     d_idx = all_valid_idx[meal_tags[all_valid_idx] == 2]
@@ -165,17 +170,22 @@ def random_individual(all_valid_idx, meal_tags):
     if len(b_idx) == 0 or len(l_idx) == 0 or len(d_idx) == 0:
         return None
 
-    individual = [
+    individual = np.array([
         np.random.choice(b_idx, 1, replace=True)[0],
         np.random.choice(l_idx, 1, replace=True)[0],
         np.random.choice(d_idx, 1, replace=True)[0],
-    ]
-    n_extra = np.random.randint(0, MAX_FOODS - 2)
+    ], dtype=np.int32)
+    lower_extra = max(0, int(min_foods) - len(individual))
+    upper_extra = max(lower_extra, min(int(max_foods), len(all_valid_idx)) - len(individual))
+    n_extra = np.random.randint(lower_extra, upper_extra + 1)
     if n_extra > 0:
-        extra = np.random.choice(all_valid_idx, n_extra, replace=True)
-        individual.extend(extra)
+        available = np.setdiff1d(all_valid_idx, individual, assume_unique=False)
+        extra = np.random.choice(
+            available, min(n_extra, len(available)), replace=False
+        )
+        individual = np.concatenate([individual, extra])
 
-    return np.array(individual, dtype=np.int32)
+    return np.unique(individual).astype(np.int32)
 
 import numpy as np
 

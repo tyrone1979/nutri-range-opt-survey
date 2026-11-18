@@ -16,6 +16,10 @@ OUT.mkdir(parents=True, exist_ok=True)
 def main():
     dens = pd.read_csv(ROOT / "results" / "target_analysis" / "feasible_density.csv")
     e2 = pd.read_csv(ROOT / "results" / "raw" / "e2_sparsity_full.csv")
+    submission_algorithms = {
+        "MA", "NSGA2", "SPEA2", "Greedy", "RandomRepair", "Random"
+    }
+    e2 = e2[e2["algorithm"].isin(submission_algorithms)].copy()
     # target-level mean FHR across algos and seeds
     fhr = e2.groupby(["sparsity", "target_id"], as_index=False)["FHR"].mean()
     fhr = fhr.rename(columns={"sparsity": "sparsity_factor", "FHR": "mean_FHR"})
@@ -46,7 +50,7 @@ def main():
                 s=80, linewidths=1.2,
             )
     axes[0].set_xlabel(r"$-\log_{10}(\hat p_F)$ (open = censored at $1/n$)")
-    axes[0].set_ylabel("Mean FHR (all algorithms)")
+    axes[0].set_ylabel("Mean FHR (six methods)")
     axes[0].set_title("(a) Empirical sparsity vs FHR")
     axes[0].grid(True, ls=":", alpha=0.4)
     axes[0].legend(fontsize=8, frameon=False)
@@ -58,10 +62,18 @@ def main():
             label=rf"$f={f}$", alpha=0.85, s=36,
         )
     axes[1].set_xscale("log")
+    axes[1].set_xlim(1e3, 5e4)
+    axes[1].set_xticks([1e3, 2e3, 5e3, 1e4, 2e4, 5e4])
+    axes[1].set_xticklabels(
+        [r"$10^{3}$", r"$2{\times}10^{3}$", r"$5{\times}10^{3}$",
+         r"$10^{4}$", r"$2{\times}10^{4}$", r"$5{\times}10^{4}$"],
+        fontsize=7,
+    )
+    axes[1].minorticks_off()
     axes[1].set_xlabel("Mean nutrient violation (random samples)")
     axes[1].set_ylabel("Mean FHR")
     axes[1].set_title("(b) Violation proxy vs FHR")
-    axes[1].grid(True, which="both", ls=":", alpha=0.4)
+    axes[1].grid(True, which="major", ls=":", alpha=0.4)
     axes[1].legend(fontsize=8, frameon=False)
     fig.suptitle(
         "Empirical feasible-region diagnostics (MC sampling; not exact volume)",

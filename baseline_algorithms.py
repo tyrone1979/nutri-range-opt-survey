@@ -590,7 +590,9 @@ class DietProblem(Problem):
 
         for i in range(n_ind):
             valid_mask = x[i] >= 0
-            indices = self.all_valid_idx[x[i][valid_mask].astype(int)]
+            indices = np.unique(
+                self.all_valid_idx[x[i][valid_mask].astype(int)]
+            )
 
             if len(indices) < self.min_foods or len(indices) > self.max_foods:
                 F[i, 0] = 1e6
@@ -739,7 +741,9 @@ def run_pymoo_algorithm(algo_name, matrix, target_array, col_idx, meal_tags, all
                 for ind in algorithm.pop:
                     x = ind.X
                     valid_mask = x >= 0
-                    indices = all_valid_idx[x[valid_mask].astype(int)]
+                    indices = np.unique(
+                        all_valid_idx[x[valid_mask].astype(int)]
+                    )
                     if len(indices) >= min_foods:
                         f, _, fe, d, c = evaluate_single(indices, matrix, target_array, col_idx, meal_tags,
                                                          max_categories,has_meal_constraint)

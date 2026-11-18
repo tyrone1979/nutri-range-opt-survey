@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build tables + figures for the TEVC supplementary material."""
+"""Build tables and figures for the SWEO supplementary material."""
 from __future__ import annotations
 
 import json
@@ -14,17 +14,17 @@ from scipy import stats
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-OUT_TAB = ROOT / "manuscript" / "supplement_tables"
-OUT_FIG = ROOT / "manuscript" / "supplement_figs"
+OUT_TAB = ROOT / "manuscript" / "swevo" / "supplement_tables"
+OUT_FIG = ROOT / "manuscript" / "swevo" / "supplement_figs"
 RAW = ROOT / "results" / "raw"
 FIGS = ROOT / "results" / "figures"
 
 ALG_ORDER = [
-    "MA", "ACMO-Diet", "NSGA2", "BMOEA", "SPEA2",
-    "RandomRepair", "RVEA", "CTAEA", "Greedy", "Random",
+    "MA", "NSGA2", "SPEA2",
+    "Greedy", "RandomRepair", "Random",
 ]
 ALG_SHORT = {
-    "ACMO-Diet": "ACMO", "NSGA2": "NSGA-II", "CTAEA": "C-TAEA",
+    "NSGA2": "NSGA-II",
     "RandomRepair": "Repair",
 }
 
@@ -47,11 +47,74 @@ def seed_fhr_stats(df: pd.DataFrame, keys: list[str]) -> pd.DataFrame:
     return out
 
 
+def load_e1_submission() -> pd.DataFrame:
+    df = pd.read_csv(RAW / "e1_scaling_full.csv")
+    corrected_path = RAW / "swevo_e1_pymoo_corrected.csv"
+    if corrected_path.exists():
+        corrected = pd.read_csv(corrected_path)
+        replace_algs = set(corrected["algorithm"].unique())
+        is_nhanes = df["dataset"].astype(str).str.contains(
+            "nhanes", case=False, na=False
+        )
+        df = pd.concat(
+            [df[~(is_nhanes & df["algorithm"].isin(replace_algs))], corrected],
+            ignore_index=True,
+        )
+    return df[df["algorithm"].isin(ALG_ORDER)].copy()
+
+
+def load_e3_submission() -> pd.DataFrame:
+    df = pd.read_csv(RAW / "e3_dimension_full.csv")
+    corrected_path = RAW / "swevo_e3_pymoo_corrected.csv"
+    if corrected_path.exists():
+        corrected = pd.read_csv(corrected_path)
+        replace_algs = set(corrected["algorithm"].unique())
+        df = pd.concat(
+            [df[~df["algorithm"].isin(replace_algs)], corrected],
+            ignore_index=True,
+        )
+    return df[df["algorithm"].isin(ALG_ORDER)].copy()
+
+
 def fmt_cell(m: float, s: float) -> str:
     if abs(m - 1.0) < 1e-12 and (not np.isfinite(s) or s < 1e-12):
         return r"$\mathbf{1.000}$"
     sm = 0.0 if not np.isfinite(s) else s
     return f"{m:.3f}$\\pm${sm:.3f}"
+
+
+def tab_begin(colspec: str) -> str:
+    """Content-aware tabular: pass a full column spec (no outer @{})."""
+    return rf"\begin{{tabular}}{{@{{}}{colspec}@{{}}}}"
+
+
+def tabx_begin(colspec: str, width: str = r"\textwidth") -> str:
+    """tabularx with explicit (non-equal) column spec; use X only on text-heavy cols."""
+    return rf"\begin{{tabularx}}{{{width}}}{{@{{}}{colspec}@{{}}}}"
+
+
+def tab_end() -> str:
+    return r"\end{tabular}"
+
+
+def tabx_end() -> str:
+    return r"\end{tabularx}"
+
+
+# Shared matplotlib typography for all supplement figures (serif to match IEEEtran body).
+SUP_RC = {
+    "font.family": "serif",
+    "font.serif": ["Nimbus Roman", "Times New Roman", "Times", "DejaVu Serif"],
+    "mathtext.fontset": "stix",
+    "font.size": 8,
+    "axes.titlesize": 9,
+    "axes.labelsize": 8,
+    "xtick.labelsize": 7,
+    "ytick.labelsize": 7,
+    "legend.fontsize": 7,
+    "figure.titlesize": 10,
+    "axes.linewidth": 0.7,
+}
 
 
 def write_tex(name: str, body: str):
@@ -62,46 +125,91 @@ def write_tex(name: str, body: str):
 # ---------- Part A ----------
 def build_s1_s2():
     df = pd.read_csv(ROOT / "data" / "representative_targets.csv")
-    # S1: all targets as longtable-friendly tabular pieces
-    rows = []
-    rows.append(r"\begin{tabular}{@{}clrr@{}}")
-    rows.append(r"\toprule")
-    rows.append(r"Target & Nutrient & $L_j$ & $U_j$ \\")
-    rows.append(r"\midrule")
+    # S1: breakable longtable with content-aware widths (Nutrient widest).
+    caption = (
+        r"Nutrient interval boxes for representative targets "
+        r"\texttt{rep\_000}--\texttt{rep\_011}. "
+        r"An upper bound of 99{,}999 or larger marks a one-sided face."
+    )
+    rows = [
+        r"\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.16\textwidth}"
+        r">{\raggedright\arraybackslash}p{0.44\textwidth}"
+        r">{\raggedleft\arraybackslash}p{0.18\textwidth}"
+        r">{\raggedleft\arraybackslash}p{0.18\textwidth}@{}}",
+        rf"\caption{{{caption}}}",
+        r"\label{tab:s1}\\",
+        r"\toprule",
+        r"Target & Nutrient & $L_j$ & $U_j$ \\",
+        r"\midrule",
+        r"\endfirsthead",
+        r"\caption[]{Nutrient interval boxes (continued).}\\",
+        r"\toprule",
+        r"Target & Nutrient & $L_j$ & $U_j$ \\",
+        r"\midrule",
+        r"\endhead",
+        r"\midrule",
+        r"\multicolumn{4}{r}{\emph{Continued on next page}}\\",
+        r"\endfoot",
+        r"\bottomrule",
+        r"\endlastfoot",
+    ]
     for _, r in df.iterrows():
-        tid = f"rep\_{int(r['representative_id']):03d}"
+        tid = f"rep\\_{int(r['representative_id']):03d}"
         td = json.loads(r["target_json"])
         first = True
         for nut in sorted(td.keys()):
             lo, hi = td[nut]
-            hi_s = r"$10^{7}$" if float(hi) >= 1e5 else f"{hi:g}"
+            hi_s = r"$\mathrm{sentinel}$" if float(hi) >= 99_999 else f"{hi:g}"
             lo_s = f"{lo:g}"
             tgt = tid if first else ""
             nut_tex = nut.replace("_", r"\_")
             rows.append(f"{tgt} & {nut_tex} & {lo_s} & {hi_s} \\\\")
             first = False
         rows.append(r"\midrule")
-    rows[-1] = r"\bottomrule"
-    rows.append(r"\end{tabular}")
+    if rows[-1].strip() == r"\midrule":
+        rows.pop()
+    rows.append(r"\end{longtable}")
     write_tex("table_s1.tex", "\n".join(rows))
 
-    # S2: scale rep_000 with sparsity_ops using deterministic caps
-    from sparsity_ops import prepare_sparsity_target
+    # S2: reproduce the E2 sanitization and scaling for rep_000.
+    import common as cm
+    from e1_scaling import load_nhanes_full, sample_food_space
+    from run_benchmark import align_target_to_space, load_representative_targets
+    from sparsity_ops import empirical_meal_caps, prepare_sparsity_target
 
-    td0 = json.loads(df.loc[df.representative_id == 0, "target_json"].iloc[0])
-    names = list(td0.keys())
-    arr = np.array([[td0[n][0], td0[n][1]] for n in names], dtype=float)
-    caps = np.array([
-        float(td0[n][1]) if float(td0[n][1]) < 1e5 else 5000.0
-        for n in names
-    ], dtype=float)
+    matrix, meal_tags, nutrients, _ = cm.load_data(
+        "data/nhanes.csv", "data/food_type.csv", "data/target.csv"
+    )
+    full = load_nhanes_full()
+    full.nutrients = matrix.astype(np.float32)
+    full.meal_tags = meal_tags.astype(np.int8)
+    full.food_ids = np.arange(len(matrix), dtype=np.int32)
+    fs = sample_food_space(full, 10_000, seed=42)
+    target = load_representative_targets("data/representative_targets.csv", 1)[0]
+    aligned = align_target_to_space(target, nutrients)
+    if aligned is None:
+        raise RuntimeError("rep_000 does not align with the NHANES nutrient matrix")
+    names = list(aligned.nutrient_names)
+    arr = np.asarray(aligned.target_array, dtype=float)
+    caps = empirical_meal_caps(
+        fs.nutrients,
+        aligned.col_idx,
+        fs.food_ids,
+        fs.meal_tags,
+        fs.min_foods,
+        fs.max_foods,
+        True,
+        n_samples=600,
+        percentile=99.0,
+        seed=42 + aligned.n_dims,
+    )
 
     scaled = {}
     for f in [0.5, 1.0, 1.5]:
         scaled[f], meta = prepare_sparsity_target(arr, f, caps)
         print(f"S2 f={f} meta", meta)
 
-    rows = [r"\begin{tabular}{@{}lrrrrrr@{}}", r"\toprule",
+    rows = [tabx_begin(r">{\raggedright\arraybackslash}p{0.20\textwidth}*{6}{>{\centering\arraybackslash}X}"), r"\toprule",
             r"Nutrient & $L^{0}$ & $U^{0}$ & $L(0.5)$ & $U(0.5)$ & $L(1.5)$ & $U(1.5)$ \\",
             r"\midrule"]
     for i, n in enumerate(names):
@@ -116,12 +224,13 @@ def build_s1_s2():
         rows.append(
             f"{nut_tex} & {fmt(lo0)} & {fmt(hi0)} & {fmt(lo5)} & {fmt(hi5)} & {fmt(lo15)} & {fmt(hi15)} \\\\"
         )
-    rows += [r"\bottomrule", r"\end{tabular}"]
+    rows += [r"\bottomrule", tabx_end()]
     write_tex("table_s2.tex", "\n".join(rows))
 
 
 def fig_s1_nutrient_sparsity():
     # Sample NHANES for zero-fraction heatmap-like bar + matrix of top nutrients
+    plt.rcParams.update(SUP_RC)
     path = ROOT / "data" / "nhanes.csv"
     df = pd.read_csv(path)
     nut_cols = [c for c in df.columns if c not in ("food_id", "grams")]
@@ -142,7 +251,7 @@ def fig_s1_nutrient_sparsity():
     labels = [nut_cols[i].replace("_", " ") for i in order]
     axes[0].barh(range(len(order)), zero_frac[order], color="#3182bd")
     axes[0].set_yticks(range(len(order)))
-    axes[0].set_yticklabels(labels, fontsize=7)
+    axes[0].set_yticklabels(labels)
     axes[0].invert_yaxis()
     axes[0].set_xlabel("Fraction of foods with zero amount")
     axes[0].set_title("(a) Nutrient zero-sparsity")
@@ -155,11 +264,11 @@ def fig_s1_nutrient_sparsity():
     im = axes[1].imshow(C, cmap="YlOrRd", vmin=0, vmax=1)
     axes[1].set_xticks(range(len(nut_cols)))
     axes[1].set_yticks(range(len(nut_cols)))
-    axes[1].set_xticklabels([c[:6] for c in nut_cols], rotation=90, fontsize=6)
-    axes[1].set_yticklabels([c[:8] for c in nut_cols], fontsize=6)
+    axes[1].set_xticklabels([c[:6] for c in nut_cols], rotation=90)
+    axes[1].set_yticklabels([c[:8] for c in nut_cols])
     axes[1].set_title("(b) Nonzero co-occurrence rate")
     fig.colorbar(im, ax=axes[1], fraction=0.046, pad=0.04)
-    fig.tight_layout()
+    fig.tight_layout(pad=0.4)
     for d in (OUT_FIG, FIGS):
         d.mkdir(parents=True, exist_ok=True)
         fig.savefig(d / "fig_s1_nutrient_sparsity.pdf", bbox_inches="tight")
@@ -170,50 +279,20 @@ def fig_s1_nutrient_sparsity():
 
 # ---------- Part C FHR tables ----------
 def build_fhr_tables():
-    e1 = pd.read_csv(RAW / "e1_scaling_full.csv")
+    e1 = load_e1_submission()
     e2 = pd.read_csv(RAW / "e2_sparsity_full.csv")
-    e3 = pd.read_csv(RAW / "e3_dimension_full.csv")
+    e3 = load_e3_submission()
 
-    # E1 NHANES + recipe
+    # E1 nested survey-derived pools
     nh = e1[e1["dataset"].astype(str).str.contains("nhanes", case=False, na=False)].copy()
-    rec = e1[~e1["dataset"].astype(str).str.contains("nhanes", case=False, na=False)].copy()
     s_nh = seed_fhr_stats(nh, ["scale"])
-    # recipe: collapse scales
-    rec2 = rec.copy()
-    rec2["scale"] = -1
-    s_rec = seed_fhr_stats(rec2, ["scale"])
 
     scales = sorted(s_nh["scale"].unique())
-    algos = [a for a in ALG_ORDER if a in set(s_nh["algorithm"]) | set(s_rec["algorithm"])]
-
-    def pivot_tex(stats: pd.DataFrame, row_key: str, row_vals, row_labels, caption_note=""):
-        lines = []
-        header = " & ".join([short(a) for a in algos])
-        lines.append(r"\begin{tabular}{@{}l" + "c" * len(algos) + "@{}}")
-        lines.append(r"\toprule")
-        lines.append(row_key + " & " + header + r" \\")
-        lines.append(r"\midrule")
-        for rv, lab in zip(row_vals, row_labels):
-            cells = []
-            for a in algos:
-                sub = stats[(stats[row_key if row_key != "Regime" else list(stats.columns)[0]] == rv) & (stats["algorithm"] == a)]
-                # fix: pass key name
-                pass
-        return lines  # placeholder
+    algos = [a for a in ALG_ORDER if a in set(s_nh["algorithm"])]
 
     # Manual clean builders
-    lines = [r"\begin{tabular}{@{}l" + "c" * len(algos) + "@{}}", r"\toprule",
+    lines = [tab_begin("l " + " ".join(["c"] * len(algos))), r"\toprule",
              "Scale & " + " & ".join(short(a) for a in algos) + r" \\", r"\midrule"]
-    # recipe row
-    cells = []
-    for a in algos:
-        sub = s_rec[s_rec["algorithm"] == a]
-        if sub.empty:
-            cells.append("---")
-        else:
-            cells.append(fmt_cell(sub["mean"].iloc[0], sub["std"].iloc[0]))
-    lines.append("Recipe & " + " & ".join(cells) + r" \\")
-    lines.append(r"\midrule")
     for sc in scales:
         cells = []
         for a in algos:
@@ -230,13 +309,13 @@ def build_fhr_tables():
         else:
             lab = str(int(sc))
         lines.append(f"{lab} & " + " & ".join(cells) + r" \\")
-    lines += [r"\bottomrule", r"\end{tabular}"]
+    lines += [r"\bottomrule", tab_end()]
     write_tex("table_s4.tex", "\n".join(lines))
 
     # E2
     s2 = seed_fhr_stats(e2, ["sparsity"])
     algos2 = [a for a in ALG_ORDER if a in set(s2["algorithm"])]
-    lines = [r"\begin{tabular}{@{}l" + "c" * len(algos2) + "c@{}}", r"\toprule",
+    lines = [tab_begin("c " + " ".join(["c"] * (len(algos2) + 1))), r"\toprule",
              r"$f$ & " + " & ".join(short(a) for a in algos2) + r" & Gap($0.5{\to}1.5$) \\", r"\midrule"]
     means = {}
     for f in [0.5, 1.0, 1.5]:
@@ -254,7 +333,7 @@ def build_fhr_tables():
         f"{means[(1.5,a)]-means[(0.5,a)]:.3f}" for a in algos2[:3]
     ) + r" $\ldots$ \\")
     # Better: put gap as final column per row only for f rows - redo
-    lines = [r"\begin{tabular}{@{}l" + "c" * len(algos2) + "c@{}}", r"\toprule",
+    lines = [tab_begin("c " + " ".join(["c"] * (len(algos2) + 1))), r"\toprule",
              r"$f$ & " + " & ".join(short(a) for a in algos2) + r" & Mean gap \\", r"\midrule"]
     for f in [0.5, 1.0, 1.5]:
         cells = []
@@ -272,13 +351,13 @@ def build_fhr_tables():
     lines.append(r"\midrule")
     gap_cells = [f"{means[(1.5,a)]-means[(0.5,a)]:.3f}" for a in algos2]
     lines.append(r"$1.5{-}0.5$ & " + " & ".join(gap_cells) + r" & --- \\")
-    lines += [r"\bottomrule", r"\end{tabular}"]
+    lines += [r"\bottomrule", tab_end()]
     write_tex("table_s5.tex", "\n".join(lines))
 
     # E3 with bold best per row
     s3 = seed_fhr_stats(e3, ["dim"])
     algos3 = [a for a in ALG_ORDER if a in set(s3["algorithm"])]
-    lines = [r"\begin{tabular}{@{}l" + "c" * len(algos3) + "@{}}", r"\toprule",
+    lines = [tab_begin("c " + " ".join(["c"] * len(algos3))), r"\toprule",
              r"Dim & " + " & ".join(short(a) for a in algos3) + r" \\", r"\midrule"]
     for d in sorted(s3["dim"].unique()):
         vals = {}
@@ -294,103 +373,131 @@ def build_fhr_tables():
                 cell = r"\textbf{" + cell + "}"
             cells.append(cell)
         lines.append(f"{int(d)} & " + " & ".join(cells) + r" \\")
-    lines += [r"\bottomrule", r"\end{tabular}"]
+    lines += [r"\bottomrule", tab_end()]
     write_tex("table_s6.tex", "\n".join(lines))
 
 
 # ---------- Part D Wilcoxon ----------
 def pairwise_matrix(df: pd.DataFrame, label: str, outfile: str):
-    """Wilcoxon signed-rank paired by (target_id, rep)."""
-    g = df.copy()
-    # Each raw row is already one (target,rep) FHR bit; keep as-is.
+    """Target-blocked Wilcoxon tests with Holm family-wise correction."""
+    # Match the primary Friedman analysis: average the ten seeds within each
+    # target, then treat targets (rather than individual runs) as blocks.
+    g = (
+        df.groupby(["target_id", "algorithm"], as_index=False)["FHR"]
+        .mean()
+    )
     algos = [a for a in ALG_ORDER if a in set(g["algorithm"])]
-    piv = g.pivot_table(index=["target_id", "rep"], columns="algorithm", values="FHR", aggfunc="mean")
-    sym = np.full((len(algos), len(algos)), r"$\cdot$", dtype=object)
+    piv = g.pivot(index="target_id", columns="algorithm", values="FHR")
+    n_alg = len(algos)
+    raw = np.ones((n_alg, n_alg))
+    pairs = []
     for i, a in enumerate(algos):
-        for j, b in enumerate(algos):
-            if i == j:
-                sym[i, j] = "---"
-                continue
-            if i > j:
-                continue
+        for j in range(i + 1, n_alg):
+            b = algos[j]
             x = piv[a].to_numpy(dtype=float)
             y = piv[b].to_numpy(dtype=float)
             mask = np.isfinite(x) & np.isfinite(y)
             x, y = x[mask], y[mask]
             diff = x - y
-            if len(x) < 5 or np.allclose(diff, 0):
-                mark = r"$\approx$"
-                sym[i, j] = mark
-                sym[j, i] = mark
-                continue
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                try:
-                    # discard zeros for wilcoxon
-                    if np.all(diff == 0):
-                        p = 1.0
-                    else:
-                        p = stats.wilcoxon(x, y, zero_method="wilcox").pvalue
-                except ValueError:
-                    p = 1.0
-            if p > 0.05:
+            try:
+                p = 1.0 if len(x) < 5 or np.allclose(diff, 0) else float(
+                    stats.wilcoxon(x, y, zero_method="wilcox").pvalue
+                )
+            except ValueError:
+                p = 1.0
+            raw[i, j] = raw[j, i] = p
+            pairs.append((p, i, j))
+
+    # Holm's step-down adjustment over all pairwise tests in this cell.
+    adjusted = np.ones((n_alg, n_alg))
+    running = 0.0
+    m = len(pairs)
+    for rank, (p, i, j) in enumerate(sorted(pairs), start=1):
+        running = max(running, (m - rank + 1) * p)
+        adjusted[i, j] = adjusted[j, i] = min(1.0, running)
+
+    sym = np.full((n_alg, n_alg), r"$\cdot$", dtype=object)
+    for i, a in enumerate(algos):
+        sym[i, i] = "---"
+        for j in range(i + 1, n_alg):
+            b = algos[j]
+            if adjusted[i, j] > 0.05:
                 mark_ab = mark_ba = r"$\approx$"
             else:
-                mark_ab = "+" if np.nanmean(x) > np.nanmean(y) else "-"
-                mark_ba = "+" if np.nanmean(y) > np.nanmean(x) else "-"
+                mark_ab = "+" if piv[a].mean() > piv[b].mean() else "-"
+                mark_ba = "+" if piv[b].mean() > piv[a].mean() else "-"
             sym[i, j] = mark_ab
             sym[j, i] = mark_ba
-    lines = [r"\begin{tabular}{@{}l" + "c" * len(algos) + "@{}}", r"\toprule",
+
+    lines = [tab_begin("l " + " ".join(["c"] * len(algos))), r"\toprule",
              " & " + " & ".join(short(a) for a in algos) + r" \\", r"\midrule"]
     for i, a in enumerate(algos):
         lines.append(short(a) + " & " + " & ".join(sym[i]) + r" \\")
-    lines += [r"\bottomrule", r"\end{tabular}"]
+    lines += [r"\bottomrule", tab_end()]
     write_tex(outfile, "\n".join(lines))
-    P = np.ones((len(algos), len(algos)))
+    pd.DataFrame(adjusted, index=algos, columns=algos).to_csv(
+        OUT_TAB / outfile.replace(".tex", "_p.csv")
+    )
+    # Numbered Holm-adjusted p-value companion table.
+    p_tex = outfile.replace(".tex", "p.tex")
+    plines = [tab_begin("l " + " ".join(["c"] * len(algos))), r"\toprule",
+              " & " + " & ".join(short(a) for a in algos) + r" \\", r"\midrule"]
     for i, a in enumerate(algos):
-        for j, b in enumerate(algos):
-            if i >= j:
-                continue
-            x = piv[a].to_numpy(dtype=float)
-            y = piv[b].to_numpy(dtype=float)
-            mask = np.isfinite(x) & np.isfinite(y)
-            x, y = x[mask], y[mask]
-            try:
-                P[i, j] = P[j, i] = stats.wilcoxon(x, y, zero_method="wilcox").pvalue
-            except Exception:
-                P[i, j] = P[j, i] = np.nan
-    pd.DataFrame(P, index=algos, columns=algos).to_csv(OUT_TAB / outfile.replace(".tex", "_p.csv"))
-    print(label, "nonzero diffs example MA vs Random p=", P[algos.index("MA"), algos.index("Random")] if "MA" in algos and "Random" in algos else "n/a")
+        cells = []
+        for j, _b in enumerate(algos):
+            if i == j:
+                cells.append("---")
+            else:
+                pv = adjusted[i, j]
+                if not np.isfinite(pv):
+                    cells.append("---")
+                elif pv < 1e-3:
+                    cells.append(f"{pv:.1e}")
+                else:
+                    cells.append(f"{pv:.3f}")
+        plines.append(short(a) + " & " + " & ".join(cells) + r" \\")
+    plines += [r"\bottomrule", tab_end()]
+    write_tex(p_tex, "\n".join(plines))
+    print(
+        label,
+        "Holm-adjusted MA vs Random p=",
+        adjusted[algos.index("MA"), algos.index("Random")]
+        if "MA" in algos and "Random" in algos else "n/a",
+    )
 
 
 def build_wilcoxon():
     e2 = pd.read_csv(RAW / "e2_sparsity_full.csv")
-    e3 = pd.read_csv(RAW / "e3_dimension_full.csv")
+    e3 = load_e3_submission()
     pairwise_matrix(e2[e2.sparsity == 0.5], "E2 f=0.5", "table_s7.tex")
     pairwise_matrix(e3[e3.dim == 16], "E3 dim16", "table_s8.tex")
 
 
 # ---------- Part E N* ----------
 def fig_s2_unstable_nstar():
-    e1 = pd.read_csv(RAW / "e1_scaling_full.csv")
+    """Observed FHR curves under target splits, with unstable N* summarized below."""
+    plt.rcParams.update(SUP_RC)
+    e1 = load_e1_submission()
     nh = e1[e1["dataset"].astype(str).str.contains("nhanes", case=False, na=False)]
-    s = seed_fhr_stats(nh, ["scale"])
-    scales = np.array(sorted(s["scale"].unique()), dtype=float)
+    scales = np.array(sorted(nh["scale"].unique()), dtype=float)
     x = np.log10(scales)
+    xlim = (float(x.min()) - 0.12, float(x.max()) + 0.12)
 
     def logistic(xv, L, k, x0):
-        return L / (1.0 + np.exp(k * (xv - x0)))
+        return L / (1.0 + np.exp(-k * (xv - x0)))
 
-    # four bootstrap splits of targets
     targets = sorted(nh["target_id"].unique())
     rng = np.random.default_rng(0)
-    fig, axes = plt.subplots(2, 2, figsize=(7.0, 5.2), sharex=True, sharey=True)
-    axes = axes.ravel()
-    algos_show = ["MA", "NSGA2", "RVEA", "Random"]
-    colors = {"MA": "#1b9e77", "NSGA2": "#d95f02", "RVEA": "#7570b3", "Random": "#e7298a"}
+    algos_show = ["MA", "NSGA2", "SPEA2", "Random"]
+    colors = {"MA": "#1b9e77", "NSGA2": "#d95f02", "SPEA2": "#7570b3", "Random": "#e7298a"}
+    markers = {"MA": "o", "NSGA2": "s", "SPEA2": "D", "Random": "^"}
+
+    fig = plt.figure(figsize=(7.2, 6.2))
+    gs = fig.add_gridspec(3, 2, height_ratios=[1.0, 1.0, 0.95], hspace=0.42, wspace=0.22)
+    axes = [fig.add_subplot(gs[i, j]) for i in range(2) for j in range(2)]
+    nstar_records = []  # (split, algo, log10_nstar or nan, stable)
 
     for ax_i, ax in enumerate(axes):
-        # resample 8/12 targets
         chosen = rng.choice(targets, size=min(8, len(targets)), replace=False)
         sub = nh[nh["target_id"].isin(chosen)]
         ss = seed_fhr_stats(sub, ["scale"])
@@ -399,92 +506,153 @@ def fig_s2_unstable_nstar():
             for sc in scales:
                 row = ss[(ss["scale"] == sc) & (ss["algorithm"] == algo)]
                 if row.empty:
-                    ys.append(np.nan); yerr.append(np.nan)
+                    ys.append(np.nan)
+                    yerr.append(np.nan)
                 else:
-                    ys.append(row["mean"].iloc[0]); yerr.append(row["std"].iloc[0])
+                    ys.append(float(row["mean"].iloc[0]))
+                    yerr.append(float(row["std"].iloc[0]))
             ys = np.asarray(ys, float)
-            ax.errorbar(x, ys, yerr=yerr, fmt="o-", ms=3, lw=1, color=colors[algo],
-                        label=short(algo), alpha=0.9)
-            # try fit
+            yerr = np.asarray(yerr, float)
+            ax.errorbar(
+                x, ys, yerr=yerr, fmt=markers[algo] + "-", ms=4.5, lw=1.15,
+                color=colors[algo], label=short(algo), alpha=0.95, capsize=2,
+            )
             mask = np.isfinite(ys)
-            if mask.sum() >= 4:
+            stable = False
+            log_n = np.nan
+            if mask.sum() >= 4 and (np.nanmax(ys) - np.nanmin(ys)) > 0.05:
                 try:
                     from scipy.optimize import curve_fit
-                    popt, _ = curve_fit(logistic, x[mask], ys[mask], p0=[1, 1, 4], maxfev=5000)
-                    xx = np.linspace(x.min(), x.max(), 100)
-                    ax.plot(xx, logistic(xx, *popt), ls="--", color=colors[algo], alpha=0.5, lw=1)
-                    nstar = 10 ** popt[2]
-                    ax.axvline(popt[2], color=colors[algo], ls=":", alpha=0.3)
-                    ax.text(0.02, 0.08 + 0.12 * algos_show.index(algo), f"{short(algo)} $N^*\\!\\approx\\!{nstar:.1e}$",
-                            transform=ax.transAxes, fontsize=6, color=colors[algo])
+                    # Increasing/decreasing logistic; k can be +/-.
+                    popt, _ = curve_fit(
+                        logistic, x[mask], ys[mask],
+                        p0=[float(np.nanmax(ys)), 1.0, float(np.nanmean(x))],
+                        maxfev=8000, bounds=([0, -20, -10], [1.5, 20, 20]),
+                    )
+                    xx = np.linspace(xlim[0], xlim[1], 120)
+                    ax.plot(xx, logistic(xx, *popt), ls="--", color=colors[algo], alpha=0.55, lw=1.0)
+                    log_n = float(popt[2])
+                    stable = xlim[0] <= log_n <= xlim[1]
+                    if stable:
+                        ax.axvline(log_n, color=colors[algo], ls=":", alpha=0.45, lw=0.9)
                 except Exception:
-                    ax.text(0.02, 0.08 + 0.12 * algos_show.index(algo), f"{short(algo)} fit fail",
-                            transform=ax.transAxes, fontsize=6, color=colors[algo])
-        ax.set_title(f"Split {ax_i+1}: targets {len(chosen)}/{len(targets)}")
-        ax.set_ylim(-0.05, 1.05)
-        ax.grid(True, ls=":", alpha=0.4)
+                    pass
+            nstar_records.append((ax_i + 1, short(algo), log_n, stable))
+        ax.set_xlim(*xlim)
+        ax.set_ylim(-0.05, 1.08)
+        ax.set_title(f"Split {ax_i + 1} ({len(chosen)}/{len(targets)} targets)")
+        ax.grid(True, ls=":", alpha=0.35)
         if ax_i % 2 == 0:
-            ax.set_ylabel("FHR")
+            ax.set_ylabel("Mean FHR")
         if ax_i >= 2:
             ax.set_xlabel(r"$\log_{10} N$")
-    axes[0].legend(fontsize=7, frameon=False, loc="lower left")
-    fig.suptitle("Exploratory logistic fits under four target splits (unstable $N^*$)", fontsize=10)
-    fig.tight_layout()
+
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, labels, loc="upper center", ncol=4, frameon=False,
+        bbox_to_anchor=(0.5, 0.995), columnspacing=1.2, handlelength=2.2,
+    )
+
+    # Bottom panel: fitted log10(N*) across splits; shade observed-data band.
+    axb = fig.add_subplot(gs[2, :])
+    xpos0 = np.arange(len(algos_show))
+    y_lo, y_hi = xlim[0] - 0.55, xlim[1] + 0.55
+    for s_i in range(1, 5):
+        for a_i, algo in enumerate(algos_show):
+            recs = [r for r in nstar_records if r[0] == s_i and r[1] == short(algo)]
+            if not recs:
+                continue
+            _, _, log_n, stable = recs[0]
+            xloc = xpos0[a_i] + (s_i - 2.5) * 0.16
+            if not np.isfinite(log_n):
+                axb.scatter(xloc, y_lo + 0.08, marker="x", s=32, color=colors[algo], alpha=0.85, zorder=3)
+                continue
+            # Clip extreme unstable estimates to the axis edge so every split is visible.
+            y_plot = float(np.clip(log_n, y_lo + 0.05, y_hi - 0.05))
+            axb.scatter(
+                xloc, y_plot,
+                s=38, color=colors[algo],
+                marker="o" if stable else "x",
+                alpha=0.9, zorder=3,
+            )
+    axb.axhspan(xlim[0], xlim[1], color="#bbbbbb", alpha=0.25)
+    axb.set_xticks(xpos0)
+    axb.set_xticklabels([short(a) for a in algos_show])
+    axb.set_ylabel(r"fitted $\log_{10} N^*$")
+    axb.set_xlabel(r"Algorithm (4 markers/algo = splits; $\circ$=in-range, $\times$=unstable/failed, clipped to axis)")
+    axb.set_ylim(y_lo, y_hi)
+    axb.set_xlim(-0.6, len(algos_show) - 0.4)
+    axb.grid(True, axis="y", ls=":", alpha=0.35)
+    axb.set_title(r"Fitted $\log_{10} N^*$ vs.\ observed scale range (gray band)")
+
+    fig.suptitle(
+        r"Exploratory logistic fits are split-dependent and often unstable",
+        y=1.01, fontsize=10,
+    )
     for d in (OUT_FIG, FIGS):
-        fig.savefig(d / "fig_s2_unstable_nstar.pdf", bbox_inches="tight")
-        fig.savefig(d / "fig_s2_unstable_nstar.png", dpi=200, bbox_inches="tight")
+        d.mkdir(parents=True, exist_ok=True)
+        fig.savefig(d / "fig_s2_unstable_nstar.pdf", bbox_inches="tight", pad_inches=0.05)
+        fig.savefig(d / "fig_s2_unstable_nstar.png", dpi=220, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
     print("fig S2 done")
 
 
-# ---------- Part F FFG ----------
 def fig_s3_ffg():
+    """FFG distributions; hit counts go in the LaTeX caption (not drawn under axes)."""
+    plt.rcParams.update(SUP_RC)
     e2 = pd.read_csv(RAW / "e2_sparsity_full.csv")
     hard = e2[e2.sparsity == 0.5].copy()
-    algos = ["MA", "ACMO-Diet", "NSGA2", "BMOEA", "RVEA"]
-    fig, ax = plt.subplots(figsize=(3.5, 2.8))
+    algos = ["MA", "NSGA2", "RandomRepair"]
+    fig, ax = plt.subplots(figsize=(5.8, 3.3))
     data, labels, notes = [], [], []
     for a in algos:
         g = hard[hard.algorithm == a]
-        # success: FHR==1
         hit = g[g["FHR"] >= 0.5]["FFG_evals"].to_numpy()
         n_succ = int((g["FHR"] >= 0.5).sum())
         n_tot = len(g)
         data.append(hit if len(hit) else np.array([np.nan]))
         labels.append(short(a))
-        med = np.median(hit) if len(hit) else np.nan
-        notes.append(f"{short(a)}: {n_succ}/{n_tot}, med={med:.0f}" if len(hit) else f"{short(a)}: 0/{n_tot}")
+        med = float(np.median(hit)) if len(hit) else np.nan
+        notes.append(
+            f"{short(a)}: {n_succ}/{n_tot}, med={med:.0f}" if len(hit) else f"{short(a)}: 0/{n_tot}"
+        )
     bp = ax.boxplot(data, tick_labels=labels, patch_artist=True, showfliers=False)
     for patch in bp["boxes"]:
         patch.set_facecolor("#c6dbef")
-    # swarm-like overlay
     rng = np.random.default_rng(0)
     for i, d in enumerate(data, start=1):
         d = d[np.isfinite(d)]
         if len(d) == 0:
             continue
         jitter = rng.normal(0, 0.06, size=len(d))
-        ax.scatter(np.full(len(d), i) + jitter, d, s=8, alpha=0.35, color="#08519c")
+        ax.scatter(np.full(len(d), i) + jitter, d, s=9, alpha=0.35, color="#08519c", zorder=3)
     ax.set_ylabel("FFG evaluations (hits only)")
     ax.set_xlabel("Algorithm")
-    ax.set_title("E2 $f=0.5$: evaluations to first feasible")
+    ax.set_title(r"E2 $f=0.5$: evaluations to first feasible")
     ax.set_yscale("log")
     ax.grid(True, axis="y", ls=":", alpha=0.4)
-    note = "; ".join(notes)
-    fig.text(0.5, -0.02, note, ha="center", fontsize=6, wrap=True)
-    fig.tight_layout()
+    fig.tight_layout(pad=0.35)
+    # Persist hit-count note for the TeX caption helper.
+    note_path = OUT_TAB / "fig_s3_hit_notes.txt"
+    OUT_TAB.mkdir(parents=True, exist_ok=True)
+    note_path.write_text("; ".join(notes))
     for d in (OUT_FIG, FIGS):
-        fig.savefig(d / "fig_s3_ffg_first_hit.pdf", bbox_inches="tight")
-        fig.savefig(d / "fig_s3_ffg_first_hit.png", dpi=200, bbox_inches="tight")
+        d.mkdir(parents=True, exist_ok=True)
+        fig.savefig(d / "fig_s3_ffg_first_hit.pdf", bbox_inches="tight", pad_inches=0.03)
+        fig.savefig(d / "fig_s3_ffg_first_hit.png", dpi=220, bbox_inches="tight", pad_inches=0.03)
     plt.close(fig)
     print("fig S3 done", notes)
 
 
-# ---------- Part G budgets ----------
 def build_s9():
     rows_data = []
-    for camp, path in [("E1", "e1_scaling_full.csv"), ("E2", "e2_sparsity_full.csv"), ("E3", "e3_dimension_full.csv")]:
-        df = pd.read_csv(RAW / path)
+    campaigns = {
+        "E1": load_e1_submission(),
+        "E2": pd.read_csv(RAW / "e2_sparsity_full.csv"),
+        "E3": load_e3_submission(),
+    }
+    for camp, df in campaigns.items():
+        df = df[df["algorithm"].isin(ALG_ORDER)]
         med = df.groupby("algorithm")["n_evals"].median()
         for a, v in med.items():
             rows_data.append({"campaign": camp, "algorithm": a, "median_n_evals": v})
@@ -494,7 +662,7 @@ def build_s9():
             wide[c] = np.nan
     wide = wide[["E1", "E2", "E3"]]
     algos = [a for a in ALG_ORDER if a in wide.index]
-    lines = [r"\begin{tabular}{@{}lccc@{}}", r"\toprule",
+    lines = [tabx_begin(r">{\raggedright\arraybackslash}X ccc"), r"\toprule",
              r"Algorithm & E1 median $n_{\mathrm{evals}}$ & E2 & E3 \\", r"\midrule",
              r"Theoretical ceiling & 100000 & 100000 & 100000 \\", r"\midrule"]
     for a in algos:
@@ -502,7 +670,7 @@ def build_s9():
         def f(x):
             return "---" if not np.isfinite(x) else f"{x:.0f}"
         lines.append(f"{short(a)} & {f(e1)} & {f(e2)} & {f(e3)} \\\\")
-    lines += [r"\bottomrule", r"\end{tabular}"]
+    lines += [r"\bottomrule", tabx_end()]
     write_tex("table_s9.tex", "\n".join(lines))
     # residual percent
     for a in algos:

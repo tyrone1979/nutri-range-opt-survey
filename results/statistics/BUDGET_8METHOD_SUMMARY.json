@@ -1,0 +1,42 @@
+{
+  "25000": {
+    "per_algo": {
+      "MA": 0.19166666666666668,
+      "NSGA2": 0.13333333333333333,
+      "Random": 0.008333333333333333,
+      "RandomRepair": 0.14166666666666666
+    },
+    "six_mean_legacy_note": "now 4-method mean",
+    "mean4": 0.11875000000000001
+  },
+  "50000": {
+    "per_algo": {
+      "MA": 0.2,
+      "NSGA2": 0.18333333333333332,
+      "Random": 0.008333333333333333,
+      "RandomRepair": 0.19166666666666668
+    },
+    "six_mean_legacy_note": "now 4-method mean",
+    "mean4": 0.14583333333333334
+  },
+  "100000": {
+    "per_algo": {
+      "MA": 0.275,
+      "NSGA2": 0.21666666666666667,
+      "Random": 0.016666666666666666,
+      "RandomRepair": 0.24166666666666667
+    },
+    "six_mean_legacy_note": "now 4-method mean",
+    "mean4": 0.18750000000000003
+  },
+  "200000": {
+    "per_algo": {
+      "MA": 0.26666666666666666,
+      "NSGA2": 0.24166666666666667,
+      "Random": 0.008333333333333333,
+      "RandomRepair": 0.25
+    },
+    "six_mean_legacy_note": "now 4-method mean",
+    "mean4": 0.19166666666666665
+  }
+}

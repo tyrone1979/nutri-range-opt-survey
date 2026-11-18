@@ -23,6 +23,7 @@ from e1_scaling import (
     load_nhanes_full,
     generate_small_dataset_targets,
     sample_food_space,
+    sample_food_space_nested,
 )
 from feasibility_geometry import estimate_feasible_density
 
@@ -230,7 +231,12 @@ def main():
 
     for sc, ds in plan_cache:
         if ds == "nhanes_sample":
-            fs = sample_food_space(full, int(sc["size"]), seed=seed)
+            sampler = (
+                sample_food_space_nested
+                if cfg.get("nested_sampling", False)
+                else sample_food_space
+            )
+            fs = sampler(full, int(sc["size"]), seed=seed)
             space_names = nh_names
         elif ds == "nhanes_full":
             fs = full

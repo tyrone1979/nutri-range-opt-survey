@@ -1,5 +1,6 @@
 .venv
 .idea
+.DS_Store
 __pycache__/
 *.py[cod]
 *.partial.csv
@@ -8,3 +9,10 @@ manuscript/*.aux
 manuscript/*.log
 manuscript/*.out
 manuscript/*.toc
+manuscript/**/*.aux
+manuscript/**/*.bbl
+manuscript/**/*.blg
+manuscript/**/*.log
+manuscript/**/*.out
+manuscript/**/*.toc
+manuscript/**/*.abs

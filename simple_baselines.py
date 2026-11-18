@@ -62,7 +62,9 @@ def _finalize(population, matrix, target_array, col_idx, meal_tags, max_categori
 
 def _rand_ind(all_valid_idx, meal_tags, min_foods, max_foods, has_meal_constraint):
     if has_meal_constraint:
-        ind = random_individual(all_valid_idx, meal_tags)
+        ind = random_individual(
+            all_valid_idx, meal_tags, min_foods=min_foods, max_foods=max_foods
+        )
         if ind is not None and min_foods <= len(ind) <= max_foods:
             return ind
     n = np.random.randint(min_foods, min(max_foods, len(all_valid_idx)) + 1)

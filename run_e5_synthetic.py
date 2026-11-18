@@ -128,7 +128,11 @@ def main():
             for m in dims:
                 for f in factors:
                     for inst in range(n_inst):
-                        rng = np.random.default_rng(seed0 + hash((structure, N, m, f, inst)) % (2**31))
+                        instance_key = f"{structure}|N{N}|m{m}|f{f}|i{inst}"
+                        matrix_seed = make_seed(
+                            seed0, "e5_matrix", N, instance_key, "generator", 0
+                        )
+                        rng = np.random.default_rng(matrix_seed)
                         A = make_synthetic_matrix(N, m, structure, rng)
                         lo, hi = make_interval_box(A, f, rng)
                         tid = f"syn_{structure}_N{N}_m{m}_f{f}_i{inst}"

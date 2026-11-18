@@ -133,7 +133,14 @@ def main():
                     min_foods=fs.min_foods, max_foods=fs.max_foods,
                     has_meal_constraint=fs.has_meal_constraint,
                     n_samples=density_samples,
-                    seed=seed + int(fac * 1000) + hash(tgt.target_id) % 10000,
+                    seed=make_seed(
+                        seed,
+                        f"{exp_name}_density_f{fac}",
+                        fs.n_foods,
+                        tgt.target_id,
+                        "density",
+                        0,
+                    ),
                 )
                 print(f"  {tgt.target_id}: capped={smeta['n_unbounded_capped']} "
                       f"ρ={geom.density:.5f} meanV={geom.mean_violation:.1f}")

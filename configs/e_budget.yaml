@@ -14,8 +14,6 @@ cap_percentile: 99.0
 evaluation_budgets: [25000, 50000, 100000, 200000]
 algorithms:
   - MA
-  - ACMO-Diet
-  - BMOEA
   - NSGA2
   - RandomRepair
   - Random
@@ -25,5 +23,5 @@ scales:
     label: "NHANES-10K"
 output_dir: results/raw
 log_dir: results/logs
-output_name: e_budget_f05.csv
+output_name: e_budget_f05_corrected.csv
 workers: 16

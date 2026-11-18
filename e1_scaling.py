@@ -144,6 +144,46 @@ def sample_food_space(full_space: FoodSpace, n_foods: int, seed: int = 42) -> Fo
     )
 
 
+def sample_food_space_nested(
+    full_space: FoodSpace, n_foods: int, seed: int = 42
+) -> FoodSpace:
+    """Return a nested, approximately category-stratified prefix.
+
+    Each category receives evenly spaced priority positions on [0, 1), while
+    the within-category order is randomized once. Calling this function with
+    the same seed and different sizes therefore produces genuinely nested
+    candidate sets without discarding category balance.
+    """
+    if n_foods >= full_space.n_foods:
+        return full_space
+
+    rng = np.random.default_rng(seed)
+    categories = full_space.categories
+    priority_parts = []
+    index_parts = []
+    for cat in np.unique(categories):
+        cat_idx = np.where(categories == cat)[0]
+        shuffled = rng.permutation(cat_idx)
+        priority = (np.arange(len(shuffled), dtype=float) + 0.5) / len(shuffled)
+        priority_parts.append(priority)
+        index_parts.append(shuffled)
+
+    priorities = np.concatenate(priority_parts)
+    indices = np.concatenate(index_parts)
+    order = np.lexsort((indices, priorities))
+    idx = np.sort(indices[order[:n_foods]]).astype(np.int32)
+
+    return FoodSpace(
+        nutrients=full_space.nutrients[idx],
+        meal_tags=full_space.meal_tags[idx],
+        categories=full_space.categories[idx],
+        food_ids=np.arange(n_foods, dtype=np.int32),
+        min_foods=full_space.min_foods,
+        max_foods=full_space.max_foods,
+        has_meal_constraint=full_space.has_meal_constraint,
+    )
+
+
 def load_allrecipes() -> FoodSpace:
     """加载 Allrecipes (food_data.csv)"""
     df = pd.read_csv('data/food_data.csv')

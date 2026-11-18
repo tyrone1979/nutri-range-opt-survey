@@ -13,15 +13,11 @@ density_samples: 1000
 cap_samples: 600
 cap_percentile: 99.0
 algorithms:
-  - BMOEA
-  - ACMO-Diet
   - MA
   - Random
   - Greedy
   - RandomRepair
   - NSGA2
-  - RVEA
-  - CTAEA
   - SPEA2
 scales:
   - dataset: nhanes_sample
