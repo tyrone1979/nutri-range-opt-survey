@@ -13,7 +13,7 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW = ROOT / "results" / "raw" / "e5_synthetic_corrected.csv"
+RAW = ROOT / "results" / "raw" / "e5_synthetic_5mat.csv"
 TABLES = ROOT / "results" / "tables"
 FIGURES = ROOT / "results" / "figures"
 STATISTICS = ROOT / "results" / "statistics"
@@ -25,6 +25,8 @@ def main() -> None:
     df = df[df["algorithm"].isin(expected)].copy()
     if set(df["algorithm"].unique()) != expected:
         raise ValueError("E5 does not contain the complete five-method suite")
+    df["inst"] = df["target_id"].str.extract(r"_i(\d+)$")[0].astype(int)
+    mat = df.groupby(["scale", "dim", "sparsity", "inst"], as_index=False)["FHR"].mean()
 
     axes = [
         ("sparsity", [0.5, 1.0, 1.5], "Width factor $f$"),
@@ -35,7 +37,7 @@ def main() -> None:
     table_parts = []
     for key, levels, _ in axes:
         part = (
-            df.groupby(key, as_index=False)["FHR"]
+            mat.groupby(key, as_index=False)["FHR"]
             .agg(mean="mean", sd="std", n="count")
             .sort_values(key)
         )
@@ -66,18 +68,21 @@ def main() -> None:
             "axes.linewidth": 0.7,
         }
     )
-    fig, plot_axes = plt.subplots(1, 3, figsize=(7.2, 2.45), sharey=True)
+    fig, plot_axes = plt.subplots(1, 4, figsize=(7.2, 2.3), sharey=True)
     labels = ["(a) Width", "(b) Dimension", "(c) Scale"]
     for ax, (key, levels, xlabel), title, part in zip(
-        plot_axes, axes, labels, table_parts
+        plot_axes[:3], axes, labels, table_parts
     ):
-        ax.plot(
+        ax.errorbar(
             part["level"],
             part["mean"],
+            yerr=part["sd"],
             marker="o",
             color="#1b9e77",
             linewidth=1.2,
             markersize=4,
+            capsize=2.5,
+            elinewidth=0.8,
         )
         ax.set_title(title)
         ax.set_xlabel(xlabel)
@@ -86,6 +91,18 @@ def main() -> None:
             ax.set_xticklabels(["5K", "10K", "25K"])
         ax.set_ylim(0, 1.05)
         ax.grid(True, linestyle=":", alpha=0.45)
+    ax = plot_axes[3]
+    for m, style in ((6, "o-"), (12, "s--")):
+        g = mat[mat["dim"] == m].groupby("sparsity")["FHR"].agg(["mean", "std"])
+        ax.errorbar(g.index, g["mean"], yerr=g["std"], fmt=style, color="#7570b3",
+                    linewidth=1.2, markersize=4, capsize=2.5, elinewidth=0.8,
+                    label=f"$|J|={m}$")
+    ax.set_title("(d) Width by dimension")
+    ax.set_xlabel("Width factor $f$")
+    ax.set_xticks([0.5, 1.0, 1.5])
+    ax.set_ylim(0, 1.05)
+    ax.grid(True, linestyle=":", alpha=0.45)
+    ax.legend(frameon=False, loc="lower right", fontsize=7)
     plot_axes[0].set_ylabel("Mean FHR")
     fig.tight_layout(pad=0.4, w_pad=0.8)
     for suffix in ("pdf", "png"):

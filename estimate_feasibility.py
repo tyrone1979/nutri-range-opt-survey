@@ -64,7 +64,7 @@ def main():
             fs.min_foods, fs.max_foods, True,
             n_samples=int(cfg.get("cap_samples", 600)),
             percentile=float(cfg.get("cap_percentile", 99.0)),
-            seed=int(cfg.get("seed", 42)),
+            seed=int(cfg.get("seed", 42)) + at.n_dims,
         )
         for fac in factors:
             ta, meta = adjust_sparsity(at.target_array, float(fac), caps)

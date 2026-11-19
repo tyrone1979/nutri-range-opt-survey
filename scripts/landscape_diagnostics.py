@@ -132,10 +132,11 @@ def load_cfg(path: str) -> dict:
 
 def write_swevo_table(df: pd.DataFrame) -> None:
     """Write the per-target diagnostic table used by the SWEO supplement."""
+    n = int(df["n_samples"].iloc[0])
     lines = [
         r"\begin{longtable}{@{}lccccccc@{}}",
         r"\caption{Per-target initialization geometry on the width axis "
-        r"($n=1200$ draws). A zero frequency is censored.}",
+        rf"($n={n}$ draws). A zero frequency is censored.}}",
         r"\label{tab:s11}\\",
         r"\toprule",
         r"Target & $f$ & $\hat p_F$ & Lower & Upper & Add & Delete & Swap \\",
@@ -197,7 +198,7 @@ def main():
             fs.min_foods, fs.max_foods, True,
             n_samples=int(cfg.get("cap_samples", 600)),
             percentile=float(cfg.get("cap_percentile", 99.0)),
-            seed=seed0,
+            seed=seed0 + at.n_dims,
         )
         for fac in factors:
             ta, meta = adjust_sparsity(at.target_array, fac, caps)

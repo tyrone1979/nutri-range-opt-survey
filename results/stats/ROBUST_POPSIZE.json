@@ -1,0 +1,200 @@
+[
+  {
+    "cell": "E2 f=0.5",
+    "pop": 100,
+    "order": "MA > NSGA2 > SPEA2",
+    "friedman_p": 0.0010477491199406505,
+    "random_FHR_pop500": 0.016666666666666666,
+    "n_random": 120
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 500,
+    "order": "MA > NSGA2 > SPEA2",
+    "friedman_p": 0.000584680832876515,
+    "random_FHR_pop500": 0.016666666666666666,
+    "n_random": 120
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 1000,
+    "order": "MA > SPEA2 > NSGA2",
+    "friedman_p": 0.00044386060390287754,
+    "random_FHR_pop500": 0.016666666666666666,
+    "n_random": 120
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 100,
+    "contrast": "MA pop100 vs 500",
+    "mean_diff": 1.1564823173178714e-17,
+    "wilcoxon_p": 0.7734375
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 100,
+    "contrast": "NSGA2 pop100 vs 500",
+    "mean_diff": 0.09999999999999999,
+    "wilcoxon_p": 0.140625
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 100,
+    "contrast": "SPEA2 pop100 vs 500",
+    "mean_diff": -0.04166666666666668,
+    "wilcoxon_p": 0.5
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 1000,
+    "contrast": "MA pop1000 vs 500",
+    "mean_diff": 4.625929269271485e-18,
+    "wilcoxon_p": 0.7734375
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 1000,
+    "contrast": "NSGA2 pop1000 vs 500",
+    "mean_diff": -0.08333333333333333,
+    "wilcoxon_p": 0.25
+  },
+  {
+    "cell": "E2 f=0.5",
+    "pop": 1000,
+    "contrast": "SPEA2 pop1000 vs 500",
+    "mean_diff": 0.016666666666666666,
+    "wilcoxon_p": 1.0
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 100,
+    "order": "MA > NSGA2 > SPEA2",
+    "friedman_p": 0.00023525542723808022,
+    "random_FHR_pop500": 0.325,
+    "n_random": 120
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 500,
+    "order": "MA > NSGA2 > SPEA2",
+    "friedman_p": 0.002187491118182885,
+    "random_FHR_pop500": 0.325,
+    "n_random": 120
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 1000,
+    "order": "MA > SPEA2 > NSGA2",
+    "friedman_p": 0.012778387649535868,
+    "random_FHR_pop500": 0.325,
+    "n_random": 120
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 100,
+    "contrast": "MA pop100 vs 500",
+    "mean_diff": 0.0,
+    "wilcoxon_p": 1.0
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 100,
+    "contrast": "NSGA2 pop100 vs 500",
+    "mean_diff": -0.07500000000000001,
+    "wilcoxon_p": 0.21875
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 100,
+    "contrast": "SPEA2 pop100 vs 500",
+    "mean_diff": -0.27499999999999997,
+    "wilcoxon_p": 0.00390625
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 1000,
+    "contrast": "MA pop1000 vs 500",
+    "mean_diff": 0.008333333333333331,
+    "wilcoxon_p": 1.0
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 1000,
+    "contrast": "NSGA2 pop1000 vs 500",
+    "mean_diff": -0.15,
+    "wilcoxon_p": 0.125
+  },
+  {
+    "cell": "E2 f=1.0",
+    "pop": 1000,
+    "contrast": "SPEA2 pop1000 vs 500",
+    "mean_diff": -0.016666666666666666,
+    "wilcoxon_p": 0.5
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 100,
+    "order": "MA > NSGA2 > SPEA2",
+    "friedman_p": 0.0008192323152397974,
+    "random_FHR_pop500": 0.31666666666666665,
+    "n_random": 120
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 500,
+    "order": "MA > NSGA2 > SPEA2",
+    "friedman_p": 0.021448399255889553,
+    "random_FHR_pop500": 0.31666666666666665,
+    "n_random": 120
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 1000,
+    "order": "MA > NSGA2 > SPEA2",
+    "friedman_p": 0.008746248313037176,
+    "random_FHR_pop500": 0.31666666666666665,
+    "n_random": 120
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 100,
+    "contrast": "MA pop100 vs 500",
+    "mean_diff": 0.0,
+    "wilcoxon_p": 1.0
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 100,
+    "contrast": "NSGA2 pop100 vs 500",
+    "mean_diff": -0.033333333333333326,
+    "wilcoxon_p": 0.78125
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 100,
+    "contrast": "SPEA2 pop100 vs 500",
+    "mean_diff": -0.2333333333333333,
+    "wilcoxon_p": 0.015625
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 1000,
+    "contrast": "MA pop1000 vs 500",
+    "mean_diff": 0.0,
+    "wilcoxon_p": 1.0
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 1000,
+    "contrast": "NSGA2 pop1000 vs 500",
+    "mean_diff": -0.09166666666666666,
+    "wilcoxon_p": 0.15625
+  },
+  {
+    "cell": "E3 |J|=16",
+    "pop": 1000,
+    "contrast": "SPEA2 pop1000 vs 500",
+    "mean_diff": 0.041666666666666664,
+    "wilcoxon_p": 0.6875
+  }
+]

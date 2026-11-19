@@ -130,7 +130,7 @@ dim=6 上多数算法 FHR≈1.0（CTAEA≈0.98）。
 | E2 LITE 详报 | `results/statistics/E2_PRIMARY_LITE_REPORT.md` |
 | E2 原始 / 表 / 图 | `results/raw/e2_sparsity_primary_lite.csv`，`results/tables/e2_primary_lite_*`，`results/figures/fig_e2_primary_lite_*` |
 | MILP | `results/raw/exact_small.csv` |
-| 手稿 | `manuscript/nutriopt_bench.pdf` |
+| 手稿 | `manuscript/sparse_interval_subset.pdf` |
 | 进度日志 | `results/logs/e1_full.log`，`e3_full.log`，`watch_then_e2_full.log` |
 
 ---

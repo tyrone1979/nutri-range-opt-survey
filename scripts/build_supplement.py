@@ -540,7 +540,7 @@ def fig_s2_unstable_nstar():
             nstar_records.append((ax_i + 1, short(algo), log_n, stable))
         ax.set_xlim(*xlim)
         ax.set_ylim(-0.05, 1.08)
-        ax.set_title(f"Split {ax_i + 1} ({len(chosen)}/{len(targets)} targets)")
+        ax.set_title(f"({'abcd'[ax_i]}) Split {ax_i + 1} ({len(chosen)}/{len(targets)} targets)")
         ax.grid(True, ls=":", alpha=0.35)
         if ax_i % 2 == 0:
             ax.set_ylabel("Mean FHR")
@@ -553,42 +553,45 @@ def fig_s2_unstable_nstar():
         bbox_to_anchor=(0.5, 0.995), columnspacing=1.2, handlelength=2.2,
     )
 
-    # Bottom panel: fitted log10(N*) across splits; shade observed-data band.
+    # Panel (e): fitted inflection per split and solver, printed rather than plotted,
+    # because most fits fail or land far outside the observed scale range.
     axb = fig.add_subplot(gs[2, :])
-    xpos0 = np.arange(len(algos_show))
-    y_lo, y_hi = xlim[0] - 0.55, xlim[1] + 0.55
+    lo, hi = float(x.min()), float(x.max())
+    status_color = {"in": "#c7e9c0", "out": "#fdd0a2", "none": "#e0e0e0"}
     for s_i in range(1, 5):
         for a_i, algo in enumerate(algos_show):
             recs = [r for r in nstar_records if r[0] == s_i and r[1] == short(algo)]
-            if not recs:
-                continue
-            _, _, log_n, stable = recs[0]
-            xloc = xpos0[a_i] + (s_i - 2.5) * 0.16
+            log_n = recs[0][2] if recs else np.nan
             if not np.isfinite(log_n):
-                axb.scatter(xloc, y_lo + 0.08, marker="x", s=32, color=colors[algo], alpha=0.85, zorder=3)
-                continue
-            # Clip extreme unstable estimates to the axis edge so every split is visible.
-            y_plot = float(np.clip(log_n, y_lo + 0.05, y_hi - 0.05))
-            axb.scatter(
-                xloc, y_plot,
-                s=38, color=colors[algo],
-                marker="o" if stable else "x",
-                alpha=0.9, zorder=3,
-            )
-    axb.axhspan(xlim[0], xlim[1], color="#bbbbbb", alpha=0.25)
-    axb.set_xticks(xpos0)
+                status, text = "none", "no fit"
+            elif lo <= log_n <= hi:
+                status, text = "in", f"{log_n:.2f}"
+            else:
+                status, text = "out", f"{log_n:.1f}"
+                if log_n <= -9.99:
+                    text += " (fit bound)"
+            axb.add_patch(plt.Rectangle((a_i, 4 - s_i), 1, 1, facecolor=status_color[status],
+                                        edgecolor="white", lw=1.5))
+            axb.text(a_i + 0.5, 4 - s_i + 0.5, text, ha="center", va="center", fontsize=7)
+    axb.set_xlim(0, len(algos_show))
+    axb.set_ylim(0, 4)
+    axb.set_xticks(np.arange(len(algos_show)) + 0.5)
     axb.set_xticklabels([short(a) for a in algos_show])
-    axb.set_ylabel(r"fitted $\log_{10} N^*$")
-    axb.set_xlabel(r"Algorithm (4 markers/algo = splits; $\circ$=in-range, $\times$=unstable/failed, clipped to axis)")
-    axb.set_ylim(y_lo, y_hi)
-    axb.set_xlim(-0.6, len(algos_show) - 0.4)
-    axb.grid(True, axis="y", ls=":", alpha=0.35)
-    axb.set_title(r"Fitted $\log_{10} N^*$ vs.\ observed scale range (gray band)")
-
-    fig.suptitle(
-        r"Exploratory logistic fits are split-dependent and often unstable",
-        y=1.01, fontsize=10,
+    axb.set_yticks(np.arange(4) + 0.5)
+    axb.set_yticklabels([f"Split {s}" for s in (4, 3, 2, 1)])
+    axb.tick_params(length=0)
+    for sp in axb.spines.values():
+        sp.set_visible(False)
+    axb.set_title(rf"(e) Fitted inflection $\log_{{10}} N^*$ (observed range {lo:.2f}–{hi:.2f})")
+    from matplotlib.patches import Patch
+    axb.legend(
+        handles=[Patch(facecolor=status_color["in"], label="inside observed range"),
+                 Patch(facecolor=status_color["out"], label="outside observed range"),
+                 Patch(facecolor=status_color["none"], label="fit failed or curve flat")],
+        loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=3, frameon=False, fontsize=7,
     )
+    print("S2 inflections:", [(s, a, None if not np.isfinite(v) else round(v, 2)) for s, a, v, _ in nstar_records])
+
     for d in (OUT_FIG, FIGS):
         d.mkdir(parents=True, exist_ok=True)
         fig.savefig(d / "fig_s2_unstable_nstar.pdf", bbox_inches="tight", pad_inches=0.05)
